@@ -1,0 +1,103 @@
+{
+  "title_lines": [
+    "Woody"
+  ],
+  "line_hues": [
+    -1,
+    -1,
+    -1
+  ],
+  "line_rainbows": [
+    false,
+    false,
+    false
+  ],
+  "line_outlines": [
+    true,
+    true,
+    true
+  ],
+  "line_font_size_offsets": [
+    5,
+    5,
+    5
+  ],
+  "line_font_spacing_offsets": [
+    9,
+    9,
+    9
+  ],
+  "line_text_offset_xs": [
+    -4,
+    -4,
+    -4
+  ],
+  "line_text_offset_ys": [
+    1,
+    1,
+    1
+  ],
+  "line_active": [
+    true,
+    true,
+    true
+  ],
+  "bg_hue": 0.0,
+  "bg_brightness": 1.0,
+  "border_hue": 0.0,
+  "zoom_level": 50,
+  "offset_x": 0,
+  "offset_y": 0,
+  "stretch_x": 1.0,
+  "stretch_y": 1.0,
+  "brightness": 0.9,
+  "crt_enabled": true,
+  "bg_scale": 1.0,
+  "bg_offset_x": 0,
+  "bg_offset_y": 0,
+  "frame_offset_x": 0,
+  "frame_offset_y": 0,
+  "scanline_alpha": 20,
+  "current_bg_index": 941,
+  "current_frame_index": 186,
+  "current_font_index": 0,
+  "line_spacing_offset": -10,
+  "font_position_step": 1,
+  "decor_enabled": true,
+  "current_decor_index": 0,
+  "decor_scale": 0.8300000000000001,
+  "decor_offset_x": 4,
+  "decor_offset_y": 0,
+  "glow_enabled": false,
+  "glow_strength": 1.0,
+  "glow_color_hue": -1,
+  "glow_size": 2,
+  "shadow_opacity": 100,
+  "direct_rgb": {
+    "0": [
+      255,
+      159,
+      0
+    ],
+    "1": [
+      255,
+      159,
+      0
+    ],
+    "2": [
+      255,
+      159,
+      0
+    ]
+  },
+  "glow_rgb": [
+    120,
+    80,
+    80
+  ],
+  "glow_direct_rgb": true,
+  "original_bg_filename": "Wood_Planks_08_Brown_2.png",
+  "original_frame_filename": "Bricks_04_Red_1.png",
+  "original_font_filename": "8bitlim.ttf",
+  "custom_bg_filename": null
+}
