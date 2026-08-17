@@ -2493,37 +2493,26 @@ class SNESIconGenerator(ctk.CTk):
         self.image_step_button = ctk.CTkButton(img_arrow_container, text="1px", width=45, height=28, fg_color="#3498db", hover_color="#2980b9", font=ctk.CTkFont(family="VT323", size=12, weight="bold"), command=self._cycle_image_position_step)
         self.image_step_button.grid(row=1, column=1, padx=1, pady=1)
 
-        # Create right panel with two columns - more compact with scrollable frames
+        # Create right panel with single column - more compact with scrollable frame
         right_container = ctk.CTkFrame(main, fg_color="#1a1a1a")
         right_container.grid(row=0, column=1, padx=(5, 5), pady=5, sticky="nsew")
         right_container.columnconfigure(0, weight=1)
-        right_container.columnconfigure(1, weight=1)
         right_container.rowconfigure(0, weight=1)
 
-        # Left column of right panel - scrollable with colored background and wider width
-        right_left = ctk.CTkScrollableFrame(right_container, fg_color="#2d2d2d", scrollbar_button_color="#3498db", scrollbar_button_hover_color="#2980b9", width=320)
-        right_left.grid(row=0, column=0, padx=(0, 3), sticky="nsew")
-        right_left.rowconfigure(0, weight=1)
+        # Single scrollable frame for all settings
+        right_panel = ctk.CTkScrollableFrame(right_container, fg_color="#2d2d2d", scrollbar_button_color="#3498db", scrollbar_button_hover_color="#2980b9", width=340)
+        right_panel.grid(row=0, column=0, sticky="nsew")
+        right_panel.rowconfigure(0, weight=1)
 
-        # Right column of right panel - scrollable with colored background and wider width
-        right_right = ctk.CTkScrollableFrame(right_container, fg_color="#252525", scrollbar_button_color="#3498db", scrollbar_button_hover_color="#2980b9", width=320)
-        right_right.grid(row=0, column=1, padx=(3, 0), sticky="nsew")
-        right_right.rowconfigure(0, weight=1)
-
-        def add_header_left(text, color="#3498db"):
-            header_frame = ctk.CTkFrame(right_left, fg_color=color, corner_radius=8)
+        def add_header(text, color="#3498db"):
+            header_frame = ctk.CTkFrame(right_panel, fg_color=color, corner_radius=8)
             header_frame.pack(fill="x", padx=10, pady=(12, 8))
             lbl = ctk.CTkLabel(header_frame, text=text, font=ctk.CTkFont(size=13, weight="bold"), text_color="white")
             lbl.pack(padx=10, pady=8)
 
-        def add_header_right(text, color="#9b59b6"):
-            header_frame = ctk.CTkFrame(right_right, fg_color=color, corner_radius=8)
-            header_frame.pack(fill="x", padx=10, pady=(12, 8))
-            lbl = ctk.CTkLabel(header_frame, text=text, font=ctk.CTkFont(size=13, weight="bold"), text_color="white")
-            lbl.pack(padx=10, pady=8)
-
+        add_header("Image Settings", color="#3498db")
         # Image Brightness - more compact
-        img_bright_frame = ctk.CTkFrame(right_left, fg_color="transparent")
+        img_bright_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         img_bright_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(img_bright_frame, text="Brightness", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         self.brightness_slider = ctk.CTkSlider(img_bright_frame, from_=0.1, to=2.0, number_of_steps=190, command=self._on_brightness, progress_color="#3498db")
@@ -2538,7 +2527,7 @@ class SNESIconGenerator(ctk.CTk):
         img_bright_frame.columnconfigure(0, weight=1)
 
         # Image Zoom - more compact
-        img_zoom_frame = ctk.CTkFrame(right_left, fg_color="transparent")
+        img_zoom_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         img_zoom_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(img_zoom_frame, text="Zoom", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         self.zoom_slider = ctk.CTkSlider(img_zoom_frame, from_=-100, to=200, number_of_steps=300, command=self._on_zoom, progress_color="#e74c3c")
@@ -2553,7 +2542,7 @@ class SNESIconGenerator(ctk.CTk):
         img_zoom_frame.columnconfigure(0, weight=1)
 
         # Image X Offset - more compact
-        img_x_frame = ctk.CTkFrame(right_left, fg_color="transparent")
+        img_x_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         img_x_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(img_x_frame, text="X Offset", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         self.x_slider = ctk.CTkSlider(img_x_frame, from_=-140, to=140, number_of_steps=280, command=self._on_x_offset, progress_color="#2ecc71")
@@ -2568,7 +2557,7 @@ class SNESIconGenerator(ctk.CTk):
         img_x_frame.columnconfigure(0, weight=1)
 
         # Image Y Offset - more compact
-        img_y_frame = ctk.CTkFrame(right_left, fg_color="transparent")
+        img_y_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         img_y_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(img_y_frame, text="Y Offset", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         self.y_slider = ctk.CTkSlider(img_y_frame, from_=-140, to=140, number_of_steps=280, command=self._on_y_offset, progress_color="#2ecc71")
@@ -2583,7 +2572,7 @@ class SNESIconGenerator(ctk.CTk):
         img_y_frame.columnconfigure(0, weight=1)
 
         # Image Stretch X - more compact
-        stretch_x_frame = ctk.CTkFrame(right_left, fg_color="transparent")
+        stretch_x_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         stretch_x_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(stretch_x_frame, text="Stretch X", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         self.stretch_x_slider = ctk.CTkSlider(stretch_x_frame, from_=0.5, to=2.0, number_of_steps=150, command=self._on_stretch_x, progress_color="#f39c12")
@@ -2598,7 +2587,7 @@ class SNESIconGenerator(ctk.CTk):
         stretch_x_frame.columnconfigure(0, weight=1)
 
         # Image Stretch Y - more compact
-        stretch_y_frame = ctk.CTkFrame(right_left, fg_color="transparent")
+        stretch_y_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         stretch_y_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(stretch_y_frame, text="Stretch Y", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         self.stretch_y_slider = ctk.CTkSlider(stretch_y_frame, from_=0.5, to=2.0, number_of_steps=150, command=self._on_stretch_y, progress_color="#f39c12")
@@ -2612,10 +2601,10 @@ class SNESIconGenerator(ctk.CTk):
         self.stretch_y_entry.bind("<FocusOut>", lambda e: self._on_stretch_y_entry_changed())
         stretch_y_frame.columnconfigure(0, weight=1)
 
-        add_header_right("Background & Border", color="#e67e22")
+        add_header("Background & Border", color="#e67e22")
         
         # Background Brightness - more compact
-        bg_bright_frame = ctk.CTkFrame(right_right, fg_color="transparent")
+        bg_bright_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         bg_bright_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(bg_bright_frame, text="BG Brightness", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         self.bg_brightness_slider = ctk.CTkSlider(bg_bright_frame, from_=-100, to=200, number_of_steps=300, command=self._on_bg_brightness, progress_color="#9b59b6")
@@ -2630,7 +2619,7 @@ class SNESIconGenerator(ctk.CTk):
         bg_bright_frame.columnconfigure(0, weight=1)
 
         # Background Hue - more compact
-        bg_hue_frame = ctk.CTkFrame(right_right, fg_color="transparent")
+        bg_hue_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         bg_hue_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(bg_hue_frame, text="BG Hue", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         
@@ -2672,7 +2661,7 @@ class SNESIconGenerator(ctk.CTk):
         bg_hue_frame.columnconfigure(0, weight=1)
 
         # Border Hue - more compact
-        border_hue_frame = ctk.CTkFrame(right_right, fg_color="transparent")
+        border_hue_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         border_hue_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(border_hue_frame, text="Border Hue", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         
@@ -2714,7 +2703,7 @@ class SNESIconGenerator(ctk.CTk):
         border_hue_frame.columnconfigure(0, weight=1)
 
         # Shadow Opacity - more compact
-        shadow_opacity_frame = ctk.CTkFrame(right_right, fg_color="transparent")
+        shadow_opacity_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         shadow_opacity_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(shadow_opacity_frame, text="Shadow Opacity", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         self.shadow_opacity_slider = ctk.CTkSlider(shadow_opacity_frame, from_=0, to=100, number_of_steps=100, command=self._on_shadow_opacity, progress_color="#34495e")
@@ -2728,8 +2717,8 @@ class SNESIconGenerator(ctk.CTk):
         self.shadow_opacity_entry.bind("<FocusOut>", lambda e: self._on_shadow_opacity_entry_changed())
         shadow_opacity_frame.columnconfigure(0, weight=1)
 
-        add_header_left("Text Settings", color="#e74c3c")
-        hue_frame = ctk.CTkFrame(right_left, fg_color="transparent")
+        add_header("Text Settings", color="#e74c3c")
+        hue_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         hue_frame.pack(fill="x", padx=10, pady=2)
         ctk.CTkLabel(hue_frame, text="Text Color", font=("Arial", 9)).grid(row=0, column=0, sticky="w")
         
@@ -2769,11 +2758,11 @@ class SNESIconGenerator(ctk.CTk):
         
         hue_frame.columnconfigure(0, weight=1)
 
-        ctk.CTkCheckBox(right_left, text="Rainbow Text", variable=self.rainbow_var, command=self._on_rainbow_toggle, font=("Arial", 9)).pack(anchor="w", padx=10, pady=1)
-        ctk.CTkCheckBox(right_left, text="Text Outline", variable=self.outline_var, command=self._on_outline_toggle, font=("Arial", 9)).pack(anchor="w", padx=10, pady=1)
-        self.glow_checkbox = ctk.CTkCheckBox(right_left, text="Glow Text", variable=self.glow_var, command=self._on_glow_toggle, font=("Arial", 9))
+        ctk.CTkCheckBox(right_panel, text="Rainbow Text", variable=self.rainbow_var, command=self._on_rainbow_toggle, font=("Arial", 9)).pack(anchor="w", padx=10, pady=1)
+        ctk.CTkCheckBox(right_panel, text="Text Outline", variable=self.outline_var, command=self._on_outline_toggle, font=("Arial", 9)).pack(anchor="w", padx=10, pady=1)
+        self.glow_checkbox = ctk.CTkCheckBox(right_panel, text="Glow Text", variable=self.glow_var, command=self._on_glow_toggle, font=("Arial", 9))
         self.glow_checkbox.pack(anchor="w", padx=10, pady=1)
-        self.glow_controls_frame = ctk.CTkFrame(right_left, fg_color="#1a1a1a")
+        self.glow_controls_frame = ctk.CTkFrame(right_panel, fg_color="#1a1a1a")
         self.glow_controls_frame.pack(fill="x", padx=10, pady=(0,8))
         self.glow_controls_frame.columnconfigure(0, weight=1)
         # Glow Strength - more compact
@@ -2849,11 +2838,11 @@ class SNESIconGenerator(ctk.CTk):
         self.glow_controls_frame.pack_forget()
 
         
-        add_header_right("CRT Effects", color="#16a085")
+        add_header("CRT Effects", color="#16a085")
         self.crt_var = ctk.BooleanVar(value=True)
-        self.crt_checkbox = ctk.CTkCheckBox(right_right, text="CRT Scanlines", variable=self.crt_var, command=self._on_crt, font=("Arial", 9))
+        self.crt_checkbox = ctk.CTkCheckBox(right_panel, text="CRT Scanlines", variable=self.crt_var, command=self._on_crt, font=("Arial", 9))
         self.crt_checkbox.pack(anchor="w", padx=10, pady=2)
-        self.scanline_controls_frame = ctk.CTkFrame(right_right, fg_color="#1a1a1a")
+        self.scanline_controls_frame = ctk.CTkFrame(right_panel, fg_color="#1a1a1a")
         self.scanline_controls_frame.columnconfigure(0, weight=1)
         self.scanline_controls_frame.pack(fill="x", padx=10, pady=(0,8))
         
@@ -2874,12 +2863,12 @@ class SNESIconGenerator(ctk.CTk):
         self.scanline_controls_frame.pack_forget()
         self.curve_var = ctk.BooleanVar(value=False)
 
-        add_header_left("Decoration Settings", color="#27ae60")
+        add_header("Decoration Settings", color="#27ae60")
         self.decor_var = ctk.BooleanVar(value=True)
-        self.decor_checkbox = ctk.CTkCheckBox(right_left, text="Show Decoration (Bottom Right)", variable=self.decor_var, command=self._on_decor_toggle, font=("Arial", 9))
+        self.decor_checkbox = ctk.CTkCheckBox(right_panel, text="Show Decoration (Bottom Right)", variable=self.decor_var, command=self._on_decor_toggle, font=("Arial", 9))
         self.decor_checkbox.pack(anchor="w", padx=10, pady=2)
         
-        self.decor_controls_frame = ctk.CTkFrame(right_left, fg_color="#1a1a1a")
+        self.decor_controls_frame = ctk.CTkFrame(right_panel, fg_color="#1a1a1a")
         self.decor_controls_frame.columnconfigure(0, weight=1)
         self.decor_controls_frame.columnconfigure(1, weight=1)
         self.decor_controls_frame.columnconfigure(2, weight=1)
