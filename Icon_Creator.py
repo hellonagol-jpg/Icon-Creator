@@ -1,47 +1,57 @@
+# GUI framework imports
 import tkinter as tk
 from tkinter import filedialog, messagebox
-import customtkinter as ctk
+import customtkinter as ctk  # Modern dark-themed GUI widgets
+
+# Image processing imports
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter
+
+# Standard library imports
 import os
 import json
 import math
 import random
 import shutil
-import colorsys
+import colorsys  # Color space conversions (HSV/RGB)
 import datetime
-import winsound
+import winsound  # Windows sound playback
 
 # Get the directory where this script is located
+# All asset paths are relative to this directory
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Configure customtkinter appearance - dark mode with blue theme
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
-WIDTH, HEIGHT = 256, 256
-RENDER_SIZE = (330, 330)
-PREVIEW_SIZE = (460, 460)
+# Icon dimensions and display sizes
+WIDTH, HEIGHT = 256, 256  # Final icon output size (SNES icon standard)
+RENDER_SIZE = (330, 330)   # Internal rendering size with padding
+PREVIEW_SIZE = (460, 460)  # Preview display size in the UI
 
-BG_DIR = os.path.join(SCRIPT_DIR, "Icon Backgrounds")
-BORDER_DIR = os.path.join(SCRIPT_DIR, "Icon Borders")
-FONT_DIR = os.path.join(SCRIPT_DIR, "Fonts")
-SOUND_DIR = os.path.join(SCRIPT_DIR, "Sounds")
-IMAGE_DIR = os.path.join(SCRIPT_DIR, "Images")
-TEMPLATE_DIR = os.path.join(SCRIPT_DIR, "Templates")
-DECOR_DIR = os.path.join(SCRIPT_DIR, "Decor")
-STORAGE_DIR = os.path.join(SCRIPT_DIR, "Templates/Storage Icons")
-GENERATED_BG_DIR = os.path.join(SCRIPT_DIR, "Generated Backgrounds")
+# Asset directory paths
+BG_DIR = os.path.join(SCRIPT_DIR, "Icon Backgrounds")      # Background images for icons
+BORDER_DIR = os.path.join(SCRIPT_DIR, "Icon Borders")       # Border/frame overlays
+FONT_DIR = os.path.join(SCRIPT_DIR, "Fonts")                # Custom font files (.ttf)
+SOUND_DIR = os.path.join(SCRIPT_DIR, "Sounds")              # UI sound effects
+IMAGE_DIR = os.path.join(SCRIPT_DIR, "Images")              # Main game images
+TEMPLATE_DIR = os.path.join(SCRIPT_DIR, "Templates")         # Saved template configurations
+DECOR_DIR = os.path.join(SCRIPT_DIR, "Decor")                # Decorative overlay images
+STORAGE_DIR = os.path.join(SCRIPT_DIR, "Templates/Storage Icons")  # Original images saved with templates
+GENERATED_BG_DIR = os.path.join(SCRIPT_DIR, "Generated Backgrounds")  # Procedurally generated backgrounds
 
 
+# Main application class for SNES-style icon creation
 class SNESIconGenerator(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Icon Creator")
+        self.title("Icon Creator")  # Window title
         
         # Set window size to 1400x900 and center it on screen
         window_width = 1400
         window_height = 900
         
-        # Get screen dimensions
+        # Get screen dimensions for centering
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         
@@ -51,22 +61,27 @@ class SNESIconGenerator(ctk.CTk):
         
         # Set geometry with centered position
         self.geometry(f"{window_width}x{window_height}+{center_x}+{center_y}")
-        self.resizable(True, True)
+        self.resizable(True, True)  # Allow window resizing
         
-        # Remove fullscreen startup - start in normal windowed mode
+        # Start in normal windowed mode (not fullscreen)
         self.state('normal')
 
+        # Create necessary directories if they don't exist
         os.makedirs(TEMPLATE_DIR, exist_ok=True)
         os.makedirs(DECOR_DIR, exist_ok=True)
         os.makedirs(STORAGE_DIR, exist_ok=True)
         os.makedirs(GENERATED_BG_DIR, exist_ok=True)
 
-        self.retro_label_font = ctk.CTkFont(family="VT323", size=20)
-        self.ui_font = ctk.CTkFont(family="VT323", size=16)
+        # Load retro-style fonts for UI (VT323 is a pixel-style font)
+        self.retro_label_font = ctk.CTkFont(family="VT323", size=20)  # For labels and titles
+        self.ui_font = ctk.CTkFont(family="VT323", size=16)            # For general UI text
 
-        # OPTIMIZATION 1: Font cache
+        # OPTIMIZATION 1: Font cache to avoid reloading fonts repeatedly
+        # Key: (font_path, size), Value: ImageFont object
         self.font_cache = {}
 
+        # Default settings dictionary - contains all initial values for icon properties
+        # Used as a template for new icons and reset functionality
         self.regular_default = {
             "title_lines": ["Template 1"],
             "line_hues": [0.0, 0.0, 0.0],
@@ -93,119 +108,141 @@ class SNESIconGenerator(ctk.CTk):
             "current_bg_index": 0,
             "current_frame_index": 0,
             "current_font_index": 0,
-            "line_spacing_offset": -10,
-            "font_position_step": 1,
-            "decor_enabled": True,
-            "current_decor_index": 0,
-            "decor_scale": 1.0,
-            "decor_offset_x": 0,
-            "decor_offset_y": 0,
-            "stretch_x": 1.0,
-            "stretch_y": 1.0,
-            "glow_enabled": False,
-            "glow_strength": 1.0,
-            "glow_color_hue": 0.0,
-            "glow_size": 2,
-            "shadow_opacity": 100
+            "line_spacing_offset": -10,      # Vertical spacing between text lines
+            "font_position_step": 1,          # Pixel step for font position adjustments
+            "decor_enabled": True,            # Whether decoration overlay is visible
+            "current_decor_index": 0,         # Index of selected decoration
+            "decor_scale": 1.0,               # Scale of decoration overlay
+            "decor_offset_x": 0,              # Horizontal offset of decoration
+            "decor_offset_y": 0,              # Vertical offset of decoration
+            "stretch_x": 1.0,                 # Horizontal stretch of main image
+            "stretch_y": 1.0,                 # Vertical stretch of main image
+            "glow_enabled": False,            # Whether text glow effect is enabled
+            "glow_strength": 1.0,             # Intensity of glow effect
+            "glow_color_hue": 0.0,            # Hue of glow color
+            "glow_size": 2,                   # Size/radius of glow effect
+            "shadow_opacity": 100            # Opacity of shadow overlay (0-255)
         }
 
-        self.game_img_orig = None
-        self.zoom_level = 50
-        self.offset_x = 0
-        self.offset_y = 0
-        self.crt_enabled = True
-        self.curve_enabled = False
-        self.scanline_alpha = 20
-        self.brightness = 0.9
-        self.bg_brightness = 1.0
-        self.border_hue = 0.0
-        self.bg_hue = 0.0
-        self.bg_scale = 1.0
-        self.bg_offset_x = 0
-        self.bg_offset_y = 0
-        self.frame_offset_x = 0
-        self.frame_offset_y = 0
-        self.stretch_x = 1.0
-        self.stretch_y = 1.0
-        self.title_lines = ["Template 1"]
-        self.line_active = [True, True, True]
-        self.line_hues = [0.0, 0.0, 0.0]
-        self.line_rainbows = [False, False, False]
-        self.line_outlines = [True, True, True]
-        self.line_font_size_offsets = [6, 6, 6]
-        self.line_font_spacing_offsets = [-1, -1, -1]
-        self.line_text_offset_xs = [6, 6, 6]
-        self.line_text_offset_ys = [6, 6, 6]
-        self.line_spacing_offset = -10
-        self.font_position_step = 1
-        self.image_position_step = 1
-        self.decor_enabled = True
-        self.decor_scale = 1.0
-        self.decor_offset_x = 0
-        self.decor_offset_y = 0
-        self.glow_enabled = False
-        self.glow_strength = 1.0
-        self.glow_color_hue = 0.0
-        self.glow_size = 2
-        self.shadow_opacity = 100
-        self.guidelines_enabled = False
-        self.decor_files = []
-        self.current_decor_index = 0
+        # Initialize icon state variables from defaults
+        self.game_img_orig = None           # Original uploaded game image (unscaled)
+        self.zoom_level = 50               # Zoom level for main image (0-100)
+        self.offset_x = 0                  # Horizontal position of main image
+        self.offset_y = 0                  # Vertical position of main image
+        self.crt_enabled = True            # Whether CRT scanline effect is enabled
+        self.curve_enabled = False         # Whether CRT curve distortion is enabled
+        self.scanline_alpha = 20           # Opacity of scanlines (0-255)
+        self.brightness = 0.9               # Brightness of main image
+        self.bg_brightness = 1.0           # Brightness of background
+        self.border_hue = 0.0             # Hue shift for border/frame
+        self.bg_hue = 0.0                  # Hue shift for background
+        self.bg_scale = 1.0                # Scale of background
+        self.bg_offset_x = 0               # Horizontal offset of background
+        self.bg_offset_y = 0               # Vertical offset of background
+        self.frame_offset_x = 0           # Horizontal offset of frame
+        self.frame_offset_y = 0           # Vertical offset of frame
+        self.stretch_x = 1.0               # Horizontal stretch of main image
+        self.stretch_y = 1.0               # Vertical stretch of main image
+        
+        # Text line properties (up to 3 lines supported)
+        self.title_lines = ["Template 1"]  # Text content for each line
+        self.line_active = [True, True, True]  # Whether each line is visible
+        self.line_hues = [0.0, 0.0, 0.0]  # Hue color for each line
+        self.line_rainbows = [False, False, False]  # Rainbow effect per line
+        self.line_outlines = [True, True, True]  # Text outline per line
+        self.line_font_size_offsets = [6, 6, 6]  # Font size adjustment per line
+        self.line_font_spacing_offsets = [-1, -1, -1]  # Letter spacing per line
+        self.line_text_offset_xs = [6, 6, 6]  # Horizontal text position per line
+        self.line_text_offset_ys = [6, 6, 6]  # Vertical text position per line
+        self.line_spacing_offset = -10     # Vertical spacing between lines
+        self.font_position_step = 1        # Pixel step for font adjustments
+        self.image_position_step = 1       # Pixel step for image adjustments
+        
+        # Decoration overlay properties
+        self.decor_enabled = True           # Whether decoration is visible
+        self.decor_scale = 1.0             # Scale of decoration
+        self.decor_offset_x = 0            # Horizontal offset of decoration
+        self.decor_offset_y = 0            # Vertical offset of decoration
+        
+        # Glow effect properties
+        self.glow_enabled = False          # Whether glow effect is enabled
+        self.glow_strength = 1.0           # Glow intensity
+        self.glow_color_hue = 0.0          # Glow color hue
+        self.glow_size = 2                 # Glow radius
+        
+        # Other properties
+        self.shadow_opacity = 100          # Shadow overlay opacity
+        self.guidelines_enabled = False    # Whether positioning guidelines are shown
+        self.decor_files = []              # List of decoration filenames
+        self.current_decor_index = 0       # Currently selected decoration
 
-        self.bg_files = []
-        self.frame_files = []
-        self.font_files = []
-        self.current_bg_index = 0
-        self.current_frame_index = 0
-        self.current_font_index = 0
-        self.templates = []
-        self.template_previews = [None] * 6
-        self.distortion_map = None
-        self._update_timer = None
-        self._repeat_id = None
+        # Asset lists and indices
+        self.bg_files = []                 # List of background filenames
+        self.frame_files = []              # List of border/frame filenames
+        self.font_files = []               # List of font filenames
+        self.current_bg_index = 0          # Currently selected background
+        self.current_frame_index = 0       # Currently selected frame
+        self.current_font_index = 0        # Currently selected font
+        
+        # Template system
+        self.templates = []                 # List of saved template configurations
+        self.template_previews = [None] * 6  # Preview images for 6 template slots
+        
+        # Utility variables
+        self.distortion_map = None         # Precomputed distortion map for CRT effect
+        self._update_timer = None          # Timer for debounced preview updates
+        self._repeat_id = None             # Timer for repeating button holds
 
-        self.font_path = os.path.join(FONT_DIR, "VT323-Regular.ttf")
-        self.title_font = None
-        self.small_font = None
+        # Font initialization
+        self.font_path = os.path.join(FONT_DIR, "VT323-Regular.ttf")  # Default font path
+        self.title_font = None             # Loaded font for title text
+        self.small_font = None             # Loaded font for smaller text
 
+        # Load arrow button images for position controls
         self.arrow_left = self._load_arrow("L.png")
         self.arrow_right = self._load_arrow("R.png")
         self.arrow_up = self._load_arrow("U.png")
         self.arrow_down = self._load_arrow("D.png")
 
-        self.rainbow_var = ctk.BooleanVar(value=False)
-        self.outline_var = ctk.BooleanVar(value=True)
-        self.glow_var = ctk.BooleanVar(value=False)
-        self.glow_controls_frame = None
-        self.last_slider = None
+        # UI checkbox variables
+        self.rainbow_var = ctk.BooleanVar(value=False)  # Rainbow text effect toggle
+        self.outline_var = ctk.BooleanVar(value=True)   # Text outline toggle
+        self.glow_var = ctk.BooleanVar(value=False)     # Glow effect toggle
+        self.glow_controls_frame = None                # Frame containing glow controls
+        self.last_slider = None                         # Track last focused slider for keyboard control
 
-        self.preserve_original_size = True
+        # Image upload behavior
+        self.preserve_original_size = True  # Keep original image size when uploading new images
 
-        self._build_ui()
-        self._load_asset_lists()
-        self._preload_all_assets()
-        self._load_templates()
+        # Build the user interface and load assets
+        self._build_ui()              # Create all UI widgets and layout
+        self._load_asset_lists()      # Scan directories for available assets
+        self._preload_all_assets()   # Load assets into memory for faster access
+        self._load_templates()       # Load saved template configurations
         if self.templates:
-            self._load_from_template(0)
-        self._load_current_fonts()
+            self._load_from_template(0)  # Load first template if available
+        self._load_current_fonts()    # Load the current font into memory
 
+        # Set initial step button text
         self.step_button.configure(text="1px")
 
-        # Initialize paragraph box with title lines
+        # Initialize paragraph text box with current title lines
         if hasattr(self, 'paragraph_entry'):
             initial_text = '\n'.join(self.title_lines[:3])
             self.paragraph_entry.delete("1.0", "end")
             self.paragraph_entry.insert("1.0", initial_text)
-            self.paragraph_entry.focus_set()
+            self.paragraph_entry.focus_set()  # Set focus to text input
 
-        self.bind("<Left>", self._keyboard_slider_left)
-        self.bind("<Right>", self._keyboard_slider_right)
+        # Bind keyboard shortcuts for slider control
+        self.bind("<Left>", self._keyboard_slider_left)   # Left arrow decreases slider
+        self.bind("<Right>", self._keyboard_slider_right)  # Right arrow increases slider
 
-        self._on_curve()
-        self._on_crt()
-        self._on_decor_toggle()
+        # Initialize toggle states for effects
+        self._on_curve()           # Apply CRT curve effect state
+        self._on_crt()             # Apply CRT scanline effect state
+        self._on_decor_toggle()   # Apply decoration visibility state
         
-        # Initialize color previews
+        # Initialize color preview widgets with current hue values
         bg_color = self._get_solid_color(self.bg_hue)
         bg_hex_color = f"#{bg_color[0]:02x}{bg_color[1]:02x}{bg_color[2]:02x}"
         self.bg_hue_preview.configure(fg_color=bg_hex_color)
@@ -214,7 +251,7 @@ class SNESIconGenerator(ctk.CTk):
         border_hex_color = f"#{border_color[0]:02x}{border_color[1]:02x}{border_color[2]:02x}"
         self.border_hue_preview.configure(fg_color=border_hex_color)
         
-        # Initialize text color RGB entries
+        # Initialize text color RGB entry fields with first active line's color
         active_idx = next((i for i, a in enumerate(self.line_active) if a), 0)
         text_color = self._get_solid_color(self.line_hues[active_idx])
         self.text_r_entry.delete(0, "end")
@@ -237,29 +274,46 @@ class SNESIconGenerator(ctk.CTk):
             self.glow_b_entry.delete(0, "end")
             self.glow_b_entry.insert(0, str(glow_color[2]))
         
+        # Generate initial preview
         self._update_preview()
 
     # ==================== FAST FONT CACHE ====================
     def _get_font(self, size, font_path=None):
-        size = max(8, min(500, int(size)))
+        """Get a font object from cache or load it if not cached.
+        
+        Args:
+            size: Font size in points (clamped between 8-500)
+            font_path: Path to font file, uses default if None
+            
+        Returns:
+            ImageFont object for the specified size
+        """
+        size = max(8, min(500, int(size)))  # Clamp size to reasonable range
         if font_path is None:
             font_path = self.font_path
-        key = (font_path, size)
+        key = (font_path, size)  # Cache key combines path and size
         if key not in self.font_cache:
             try:
                 self.font_cache[key] = ImageFont.truetype(font_path, size)
             except:
+                # Fallback to default font if loading fails
                 self.font_cache[key] = ImageFont.load_default()
         return self.font_cache[key]
 
     def _load_current_fonts(self):
+        """Load the currently selected font into memory.
+        
+        Handles both regular fonts from the Fonts folder and template-specific fonts
+        from template storage folders. Clears the font cache and reloads fonts
+        at the standard sizes used for rendering.
+        """
         # Reset font index if it's out of range (after font deletion)
         if self.font_files and self.current_font_index >= len(self.font_files):
             self.current_font_index = 0
         
         if self.font_files and self.current_font_index < len(self.font_files):
             font_filename = self.font_files[self.current_font_index]
-            # Check if this is a template font
+            # Check if this is a template font (saved with a template)
             if font_filename.startswith("template_"):
                 # Template font - construct path to template folder
                 template_idx = font_filename.split("_")[1]
@@ -268,44 +322,68 @@ class SNESIconGenerator(ctk.CTk):
             else:
                 # Regular font - use main Fonts folder
                 self.font_path = os.path.join(FONT_DIR, font_filename)
+        
+        # Clear cache to force reload with new font
         self.font_cache.clear()
+        
+        # Load fonts at standard sizes used for rendering
         try:
-            self.title_font = self._get_font(44)
-            self.small_font = self._get_font(20)
+            self.title_font = self._get_font(44)  # Large font for main text
+            self.small_font = self._get_font(20)  # Small font for secondary text
         except:
+            # Fallback to default font if loading fails
             self.title_font = ImageFont.load_default()
             self.small_font = ImageFont.load_default()
 
     def _load_arrow(self, filename):
+        """Load an arrow button image for position controls.
+        
+        Args:
+            filename: Name of the arrow image file (L.png, R.png, U.png, D.png)
+            
+        Returns:
+            CTkImage object for the arrow, or None if loading fails
+        """
         path = os.path.join(IMAGE_DIR, filename)
         if os.path.exists(path):
             try:
                 img = Image.open(path).convert("RGBA")
                 return ctk.CTkImage(light_image=img, size=(26, 26))
             except:
-                pass
+                pass  # Return None if loading fails
         return None
 
     def _preload_all_assets(self):
-        # Use lazy loading - only cache what's needed, load on demand
-        self.bg_cache = {}
-        self.frame_cache = {}
-        self.decor_cache = {}
+        """Initialize asset caches and load essential UI assets.
         
-        # Only load essential UI assets at startup
+        Uses lazy loading for backgrounds, frames, and decorations - they are
+        loaded on demand when first used. Only essential UI assets (CRT effect,
+        scanlines, alpha mask, shadow) are loaded at startup.
+        """
+        # Initialize empty caches for lazy loading
+        self.bg_cache = {}      # Background images cache
+        self.frame_cache = {}   # Frame/border images cache
+        self.decor_cache = {}   # Decoration images cache
+        
+        # Load essential UI assets at startup
+        # CRT background for curve effect
         crt_path = os.path.join(IMAGE_DIR, "CRT.png")
         if os.path.exists(crt_path):
             crt = Image.open(crt_path).convert("RGBA")
-            crt = crt.rotate(90, expand=True)
+            crt = crt.rotate(90, expand=True)  # Rotate for proper orientation
             self.crt_bg_img = crt.resize((WIDTH, HEIGHT), Image.Resampling.NEAREST)
         else:
             self.crt_bg_img = None
 
+        # Scanline overlay image
         scan_path = os.path.join(IMAGE_DIR, "scanlines.png")
         self.scanlines_img = Image.open(scan_path).convert("RGBA") if os.path.exists(scan_path) else None
+        
+        # Alpha mask for final icon shape
         alpha_path = os.path.join(IMAGE_DIR, "alpha.png")
         self.alpha_mask_img = Image.open(alpha_path).convert("L").resize((WIDTH, HEIGHT), Image.Resampling.NEAREST) if os.path.exists(alpha_path) else None
         
+        # Border shadow overlay
         shadow_path = os.path.join(IMAGE_DIR, "bordershadow.png")
         if os.path.exists(shadow_path):
             self.border_shadow_img = Image.open(shadow_path).convert("RGBA").resize((WIDTH, HEIGHT), Image.Resampling.NEAREST)
@@ -313,14 +391,27 @@ class SNESIconGenerator(ctk.CTk):
             self.border_shadow_img = None
     
     def _get_bg(self, index, template_data=None):
-        """Lazy load background on demand"""
-        # Check if we're rendering a template preview and it has a template background
+        """Lazy load a background image on demand.
+        
+        Handles three cases:
+        1. Template preview with embedded background
+        2. Custom/generated backgrounds (index >= len(bg_files))
+        3. Regular backgrounds from BG_DIR
+        
+        Args:
+            index: Index of the background to load
+            template_data: Optional template object with embedded background
+            
+        Returns:
+            PIL Image object or None if loading fails
+        """
+        # Check if we're rendering a template preview with embedded background
         if template_data and hasattr(template_data, '_template_bg') and template_data._template_bg is not None:
             return template_data._template_bg
         
         # Check if it's a custom background (index >= len(bg_files))
         if index >= len(self.bg_files):
-            # Custom background loading
+            # Custom background loading from Generated Backgrounds folder
             if index in self.bg_cache:
                 return self.bg_cache[index]
             
@@ -340,7 +431,7 @@ class SNESIconGenerator(ctk.CTk):
                             return None
             return None
         
-        # Regular background loading
+        # Regular background loading from BG_DIR
         if index >= len(self.bg_files):
             return None
         if index not in self.bg_cache:
@@ -352,7 +443,17 @@ class SNESIconGenerator(ctk.CTk):
         return self.bg_cache[index]
     
     def _get_frame(self, index):
-        """Lazy load frame/border on demand"""
+        """Lazy load a frame/border image on demand.
+        
+        Loads the frame image and applies an optional alpha mask (alpha2.png)
+        to control the frame's transparency pattern.
+        
+        Args:
+            index: Index of the frame to load
+            
+        Returns:
+            PIL Image object or None if loading fails
+        """
         if index >= len(self.frame_files):
             return None
         if index not in self.frame_cache:
@@ -360,6 +461,7 @@ class SNESIconGenerator(ctk.CTk):
             if os.path.exists(path):
                 try:
                     frame = Image.open(path).convert("RGBA").resize((WIDTH, HEIGHT), Image.Resampling.NEAREST)
+                    # Apply optional alpha mask for frame transparency pattern
                     alpha2_path = os.path.join(IMAGE_DIR, "alpha2.png")
                     if os.path.exists(alpha2_path):
                         alpha2 = Image.open(alpha2_path).convert("L").resize((WIDTH, HEIGHT), Image.Resampling.NEAREST)
@@ -372,7 +474,17 @@ class SNESIconGenerator(ctk.CTk):
         return self.frame_cache[index]
     
     def _get_decor(self, index):
-        """Lazy load decor on demand"""
+        """Lazy load a decoration image on demand.
+        
+        Decorations are small overlay images (typically 20x20) that can be
+        placed over the icon for additional visual flair.
+        
+        Args:
+            index: Index of the decoration to load
+            
+        Returns:
+            PIL Image object or None if loading fails
+        """
         if index >= len(self.decor_files):
             return None
         if index not in self.decor_cache:
@@ -384,46 +496,92 @@ class SNESIconGenerator(ctk.CTk):
         return self.decor_cache[index]
 
     def _load_asset_lists(self):
+        """Scan asset directories and build lists of available files.
+        
+        Loads sorted lists of PNG files for backgrounds, frames, and decorations,
+        and TTF files for fonts. Falls back to default files if directories are empty.
+        """
+        # Scan directories for asset files (case-insensitive extension check)
         self.bg_files = sorted([f for f in os.listdir(BG_DIR) if f.lower().endswith('.png')]) if os.path.exists(BG_DIR) else []
         self.frame_files = sorted([f for f in os.listdir(BORDER_DIR) if f.lower().endswith('.png')]) if os.path.exists(BORDER_DIR) else []
         self.font_files = sorted([f for f in os.listdir(FONT_DIR) if f.lower().endswith('.ttf')]) if os.path.exists(FONT_DIR) else []
         self.decor_files = sorted([f for f in os.listdir(DECOR_DIR) if f.lower().endswith('.png')]) if os.path.exists(DECOR_DIR) else []
 
+        # Fallback to default files if directories are empty but defaults exist
         if not self.bg_files and os.path.exists(os.path.join(BG_DIR, "bg.png")): self.bg_files = ["bg.png"]
         if not self.frame_files and os.path.exists(os.path.join(BORDER_DIR, "border.png")): self.frame_files = ["border.png"]
         if not self.font_files and os.path.exists(os.path.join(FONT_DIR, "VT323-Regular.ttf")): self.font_files = ["VT323-Regular.ttf"]
         if not self.decor_files and os.path.exists(os.path.join(DECOR_DIR, "Chevron.png")): self.decor_files = ["Chevron.png", "Star.png"]
 
     def _debounced_update(self):
+        """Schedule a debounced preview update.
+        
+        Cancels any pending update and schedules a new one after 16ms.
+        This prevents excessive rendering during rapid UI changes.
+        """
         if self._update_timer is not None:
             self.after_cancel(self._update_timer)
-        self._update_timer = self.after(16, self._full_update)
+        self._update_timer = self.after(16, self._full_update)  # ~60fps update rate
 
     def _full_update(self):
-        self._update_preview()
-        self._update_dynamic_labels()
-        self._update_debug_labels()
+        """Perform a full update of the preview and UI labels.
+        
+        Called by the debounced update timer to refresh the icon preview
+        and update dynamic label values.
+        """
+        self._update_preview()           # Regenerate the icon preview
+        self._update_dynamic_labels()   # Update selection labels
+        self._update_debug_labels()     # Update debug/position labels
 
     def _update_debug_labels(self):
+        """Update debug labels with current decoration values.
+        
+        Updates the labels that show the current scale and offset values
+        for the decoration overlay.
+        """
         if hasattr(self, 'decor_scale_label'): self.decor_scale_label.configure(text=f"{self.decor_scale:.2f}")
         if hasattr(self, 'decor_offset_x_label'): self.decor_offset_x_label.configure(text=f"{self.decor_offset_x}")
         if hasattr(self, 'decor_offset_y_label'): self.decor_offset_y_label.configure(text=f"{self.decor_offset_y}")
 
     # ==================== UNIFIED RENDER CORE + FAST TEXT ====================
     def _draw_text_optimized(self, draw, lines, num_lines, start_y_base, use_data):
+        """Draw multi-line text with optimized per-character positioning.
+        
+        This method handles:
+        - Dynamic font sizing based on number of lines (1 line = larger, 3 lines = smaller)
+        - Horizontal and vertical centering of text
+        - Per-character kerning (letter spacing)
+        - Rainbow color effect (hue shifts per character)
+        - Text outlines and glow effects
+        - Direct RGB color overrides vs hue-based colors
+        
+        Args:
+            draw: ImageDraw object to draw on
+            lines: List of text strings to draw
+            num_lines: Number of text lines (1-3)
+            start_y_base: Base Y position for vertical centering
+            use_data: Data object containing text properties (self or template data)
+        """
+        # Calculate line heights based on font size and spacing
         line_heights = []
         for i in range(num_lines):
+            # Base size decreases with more lines: 44px for 1 line, 38px for 2, 32px for 3
             base_size = 44 if num_lines == 1 else 38 if num_lines == 2 else 32
             fs = max(20, min(500, base_size + use_data.line_font_size_offsets[i]))
             line_heights.append(fs + 2 + use_data.line_spacing_offset)
+        
+        # Calculate vertical centering position
         total_height = sum(line_heights)
         start_y = start_y_base - total_height // 2
         cumulative = 0
+        
+        # Draw each line of text
         for i, txt in enumerate(lines):
             if not txt:
                 cumulative += line_heights[i]
                 continue
             
+            # Get font size and load font
             font_size = max(20, min(500, (44 if num_lines == 1 else 38 if num_lines == 2 else 32) + use_data.line_font_size_offsets[i]))
             # Use template's font_path if available, otherwise use current font
             font_path = getattr(use_data, 'font_path', None)
@@ -431,66 +589,112 @@ class SNESIconGenerator(ctk.CTk):
             kerning = use_data.line_font_spacing_offsets[i]
             
             # Pre-compute advance widths for each character using font.getlength()
+            # This is more accurate than using a fixed character width
             char_advances = [title_font.getlength(char) for char in txt]
             total_width = sum(char_advances) + kerning * (len(txt) - 1)
             
+            # Calculate center position with offset
             center_x = WIDTH // 2 + use_data.line_text_offset_xs[i] + 2
             ty = start_y + cumulative + use_data.line_text_offset_ys[i]
             
             # Start char_x at the left edge so each glyph is placed edge-to-edge
             char_x = center_x - total_width / 2
             
+            # Draw characters with rainbow effect if enabled
             if use_data.line_rainbows[i]:
                 for char_index, char in enumerate(txt):
                     advance = char_advances[char_index]
+                    # Shift hue for each character to create rainbow gradient
                     hue = (use_data.line_hues[i] + char_index * 25) % 360
                     color = self._hue_to_rgb(hue)
                     self._draw_char_effects(draw, char, char_x, ty, title_font, color, use_data, i)
                     char_x += advance + kerning
             else:
-                # Use the new helper method to get the correct color
+                # Draw with uniform color (or direct RGB override)
                 color = self._get_text_color(i, use_data)
                 for char_index, char in enumerate(txt):
                     advance = char_advances[char_index]
+                    # Draw black outline if enabled
                     if use_data.line_outlines[i]:
                         for dx, dy in [(-3,-3),(3,-3),(-3,3),(3,3),(-2,0),(2,0),(0,-2),(0,2)]:
                             draw.text((char_x + dx, ty + dy), char, font=title_font, fill=(0, 0, 0), anchor="lm")
+                    # Draw glow effect if enabled
                     if use_data.glow_enabled and use_data.line_active[i]:
                         gc = self._get_glow_color(use_data)
                         alpha = int(80 * use_data.glow_strength)
                         glow_color = (gc[0], gc[1], gc[2], alpha)
                         for dx, dy in [(-use_data.glow_size,0),(use_data.glow_size,0),(0,-use_data.glow_size),(0,use_data.glow_size)]:
                             draw.text((char_x + dx, ty + dy), char, font=title_font, fill=glow_color, anchor="lm")
+                    # Draw the main character
                     draw.text((char_x, ty), char, font=title_font, fill=color, anchor="lm")
                     char_x += advance + kerning
             cumulative += line_heights[i]
 
     def _draw_char_effects(self, draw, char, tx, ty, font, color, use_data, line_idx):
+        """Draw a single character with outline and glow effects.
+        
+        Args:
+            draw: ImageDraw object to draw on
+            char: Character to draw
+            tx: X position to draw at
+            ty: Y position to draw at
+            font: Font object to use
+            color: RGB color tuple for the character
+            use_data: Data object containing effect settings
+            line_idx: Index of the text line (for per-line settings)
+        """
+        # Draw black outline if enabled for this line
         if use_data.line_outlines[line_idx]:
             for dx, dy in [(-3,-3),(3,-3),(-3,3),(3,3),(-3,0),(3,0),(0,-3),(0,3)]:
                 draw.text((tx + dx, ty + dy), char, font=font, fill=(0, 0, 0), anchor="lm")
+        
+        # Draw glow effect if enabled and line is active
         if use_data.glow_enabled and use_data.line_active[line_idx]:
             gc = self._get_glow_color(use_data)
             alpha = int(80 * use_data.glow_strength)
             glow_color = (gc[0], gc[1], gc[2], alpha)
             for dx, dy in [(-use_data.glow_size,0),(use_data.glow_size,0),(0,-use_data.glow_size),(0,use_data.glow_size)]:
                 draw.text((tx + dx, ty + dy), char, font=font, fill=glow_color, anchor="lm")
+        
+        # Draw the main character
         draw.text((tx, ty), char, font=font, fill=color, anchor="lm")
 
     def _render_core(self, for_preview=False, template_data=None):
+        """Main rendering function that composes all icon layers.
+        
+        Renders the complete icon by layering:
+        1. Background (with hue shift, brightness, scale, and offset)
+        2. Main game image (with zoom, stretch, brightness, and position)
+        3. CRT scanlines (if enabled)
+        4. Text lines (with outlines, glow, rainbow effects)
+        5. Decoration overlay (if enabled)
+        6. Frame/border (with hue shift)
+        7. Shadow overlay
+        8. Alpha mask (for final icon shape)
+        
+        Args:
+            for_preview: If True, returns a resized preview image
+            template_data: If provided, uses template data instead of self
+            
+        Returns:
+            PIL Image object (resized if for_preview=True)
+        """
         use_data = template_data if template_data is not None else self
-        inner = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+        inner = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))  # Create blank canvas
 
+        # Layer 1: Background
         bg = self._get_bg(use_data.current_bg_index, template_data)
         if bg:
-            bg = bg.copy()
+            bg = bg.copy()  # Don't modify cached original
             if use_data.bg_hue != 0:
-                bg = self._apply_hue_shift(bg, use_data.bg_hue)
-            bg = ImageEnhance.Brightness(bg.convert("RGBA")).enhance(use_data.bg_brightness)
+                bg = self._apply_hue_shift(bg, use_data.bg_hue)  # Apply hue shift
+            bg = ImageEnhance.Brightness(bg.convert("RGBA")).enhance(use_data.bg_brightness)  # Adjust brightness
             if use_data.bg_scale != 1.0:
+                # Scale background
                 new_w = int(WIDTH * use_data.bg_scale)
                 new_h = int(HEIGHT * use_data.bg_scale)
                 bg = bg.resize((new_w, new_h), Image.Resampling.NEAREST)
+            # Center and apply offset
             paste_x = (WIDTH - bg.width) // 2 + use_data.bg_offset_x
             paste_y = (HEIGHT - bg.height) // 2 + use_data.bg_offset_y
             # Fix transparency mask - only use mask if image has alpha channel
@@ -499,27 +703,30 @@ class SNESIconGenerator(ctk.CTk):
             else:
                 inner.paste(bg, (paste_x, paste_y))
 
+        # Layer 2: Main game image (only if not rendering template preview)
         if self.game_img_orig and template_data is None:
-            base_scale = self._get_scale()
-            scale_x = base_scale * self.stretch_x
-            scale_y = base_scale * self.stretch_y
+            base_scale = self._get_scale()  # Get zoom scale
+            scale_x = base_scale * self.stretch_x  # Apply horizontal stretch
+            scale_y = base_scale * self.stretch_y  # Apply vertical stretch
             scaled_w = max(1, int(self.game_img_orig.width * scale_x))
             scaled_h = max(1, int(self.game_img_orig.height * scale_y))
             scaled = self.game_img_orig.resize((scaled_w, scaled_h), Image.Resampling.NEAREST)
-            scaled = ImageEnhance.Brightness(scaled).enhance(self.brightness)
+            scaled = ImageEnhance.Brightness(scaled).enhance(self.brightness)  # Adjust brightness
+            # Center and apply offset
             paste_x = (WIDTH - scaled_w) // 2 + self.offset_x
             paste_y = (HEIGHT - scaled_h) // 2 + self.offset_y
-            # Fix transparency mask - only use mask if image has alpha channel
+                # Fix transparency mask - only use mask if image has alpha channel
             if scaled.mode == 'RGBA':
                 inner.paste(scaled, (paste_x, paste_y), scaled)
             else:
                 inner.paste(scaled, (paste_x, paste_y))
 
-        # Apply scanlines (opacity only, centered)
+        # Layer 3: CRT scanlines (if enabled)
         if use_data.crt_enabled and self.scanlines_img:
             scan = self.scanlines_img.copy()
             scanline_alpha = getattr(use_data, 'scanline_alpha', 45)
             if scanline_alpha < 100:
+                # Adjust scanline opacity
                 factor = scanline_alpha / 100.0
                 alpha_layer = scan.split()[3]
                 new_alpha = alpha_layer.point(lambda p: int(p * factor))
@@ -532,12 +739,14 @@ class SNESIconGenerator(ctk.CTk):
             else:
                 inner.paste(scan, (paste_x, paste_y))
 
-        # Text and decor on top of scanlines
+        # Layer 4: Text and decoration (on top of scanlines)
         draw = ImageDraw.Draw(inner)
-        lines = [line for line in use_data.title_lines[:3] if line]
+        lines = [line for line in use_data.title_lines[:3] if line]  # Get non-empty lines
         num_lines = len(lines)
+        # Y position varies based on number of lines for optimal centering
         self._draw_text_optimized(draw, lines, num_lines, 228 if num_lines == 1 else 208 if num_lines == 2 else 193, use_data)
 
+        # Layer 5: Decoration overlay (bottom-right corner)
         if use_data.decor_enabled:
             dec = self._get_decor(use_data.current_decor_index)
             if dec:
@@ -545,7 +754,7 @@ class SNESIconGenerator(ctk.CTk):
                 dec_w = int(20 * use_data.decor_scale)
                 dec_h = int(20 * use_data.decor_scale)
                 dec = dec.resize((dec_w, dec_h), Image.Resampling.NEAREST)
-                margin = 22
+                margin = 22  # Distance from edge
                 paste_x = WIDTH - dec_w - margin + use_data.decor_offset_x
                 paste_y = HEIGHT - dec_h - margin + use_data.decor_offset_y
                 # Fix transparency mask - only use mask if image has alpha channel
@@ -554,32 +763,35 @@ class SNESIconGenerator(ctk.CTk):
                 else:
                     inner.paste(dec, (paste_x, paste_y))
 
-        # Border/frame - on top of everything except shadow
+        # Layer 6: Border/frame (on top of everything except shadow)
         frame = self._get_frame(use_data.current_frame_index)
         if frame:
             frame = frame.copy()
             if use_data.border_hue != 0:
-                frame = self._apply_hue_shift(frame, use_data.border_hue)
+                frame = self._apply_hue_shift(frame, use_data.border_hue)  # Apply hue shift
             # Fix transparency mask - only use mask if image has alpha channel
             if frame.mode == 'RGBA':
                 inner.paste(frame, (use_data.frame_offset_x, use_data.frame_offset_y), frame)
             else:
                 inner.paste(frame, (use_data.frame_offset_x, use_data.frame_offset_y))
 
-        # Border shadow overlay - always on top of border
+        # Layer 7: Border shadow overlay (always on top of border)
         if self.border_shadow_img and hasattr(use_data, 'shadow_opacity'):
             shadow = self.border_shadow_img.copy()
             shadow_opacity = getattr(use_data, 'shadow_opacity', 100)
             if shadow_opacity < 100:
+                # Adjust shadow opacity
                 factor = shadow_opacity / 100.0
                 alpha_layer = shadow.split()[3]
                 new_alpha = alpha_layer.point(lambda p: int(p * factor))
                 shadow.putalpha(new_alpha)
             inner.paste(shadow, (0, 0), shadow)
 
+        # Layer 8: Apply alpha mask for final icon shape
         if self.alpha_mask_img:
             inner.putalpha(self.alpha_mask_img)
 
+        # Return preview-sized image if requested, otherwise return full-size
         if for_preview:
             large = Image.new("RGBA", RENDER_SIZE, (0, 0, 0, 0))
             offset = (RENDER_SIZE[0] - WIDTH) // 2
@@ -588,15 +800,37 @@ class SNESIconGenerator(ctk.CTk):
         return inner
 
     def _composite_image(self, for_preview=False):
+        """Wrapper for _render_core for backward compatibility.
+        
+        Args:
+            for_preview: If True, returns a resized preview image
+            
+        Returns:
+            PIL Image object
+        """
         return self._render_core(for_preview=for_preview)
 
     def _update_preview(self):
+        """Update the preview label with the current icon rendering.
+        
+        Renders the icon at preview size and updates the UI preview widget.
+        """
         img = self._composite_image(for_preview=True)
         ctk_img = ctk.CTkImage(light_image=img, size=img.size)
         self.preview_label.configure(image=ctk_img)
 
     def _render_template_preview(self, idx):
-        """Render template preview from folder structure"""
+        """Render a template preview from its folder structure.
+        
+        Loads the template's settings and assets from its storage folder
+        and renders a small preview image for the template selection UI.
+        
+        Args:
+            idx: Template index (0-5)
+            
+        Returns:
+            CTkImage object for the preview, or a blank placeholder if template doesn't exist
+        """
         import json
         
         try:
@@ -621,7 +855,7 @@ class SNESIconGenerator(ctk.CTk):
             else:
                 settings = {}
             
-            # Load game image
+            # Load game image from template folder
             game_path = os.path.join(template_folder, "template_game.png")
             game_img = None
             if os.path.exists(game_path):
@@ -630,10 +864,11 @@ class SNESIconGenerator(ctk.CTk):
                 except:
                     game_img = None
 
+            # Create temporary data object to hold template settings
             class TempData: pass
             td = TempData()
             
-            # Load all settings from JSON
+            # Load all settings from JSON with fallback defaults
             td.title_lines = settings.get("title_lines", ["Template 1"])
             td.line_font_size_offsets = settings.get("line_font_size_offsets", [6,6,6])
             td.line_font_spacing_offsets = settings.get("line_font_spacing_offsets", [-1,-1,-1])
@@ -681,7 +916,7 @@ class SNESIconGenerator(ctk.CTk):
             else:
                 td.font_path = self.font_path
             
-            # Add direct RGB data for template preview
+            # Add direct RGB data for template preview (for custom RGB color overrides)
             direct_rgb = settings.get("direct_rgb", {})
             if direct_rgb:
                 # Convert string keys to integers for template preview
@@ -689,7 +924,7 @@ class SNESIconGenerator(ctk.CTk):
             else:
                 td._direct_rgb = {}
 
-            # Load template background if it exists
+            # Load template background if it exists (custom background saved with template)
             bg_path = os.path.join(template_folder, "template_bg.png")
             if os.path.exists(bg_path):
                 try:
@@ -699,10 +934,12 @@ class SNESIconGenerator(ctk.CTk):
             else:
                 td._template_bg = None
 
+            # Render the icon with template settings
             canvas = self._render_core(for_preview=False, template_data=td)
 
+            # Paste the game image onto the canvas (template preview needs manual pasting)
             if game_img:
-                base_scale = 0.2 + ((td.zoom_level + 100) / 200.0) * 1.8
+                base_scale = 0.2 + ((td.zoom_level + 100) / 200.0) * 1.8  # Convert zoom to scale
                 stretch_x = td.stretch_x
                 stretch_y = td.stretch_y
                 scaled_w = max(1, int(game_img.width * base_scale * stretch_x))
@@ -717,6 +954,7 @@ class SNESIconGenerator(ctk.CTk):
                 else:
                     canvas.paste(scaled, (paste_x, paste_y))
 
+            # Resize to thumbnail size for UI preview
             small = canvas.resize((128, 128), Image.Resampling.LANCZOS)
             return ctk.CTkImage(light_image=small, size=(128, 128))
         except Exception as e:
@@ -728,18 +966,25 @@ class SNESIconGenerator(ctk.CTk):
 
     # ==================== MOVEMENT FIX (expanded range) ====================
     def _move_text_left(self):
+        """Move all active text lines left by the current step size."""
         for i in range(3):
             if self.line_active[i]:
                 self.line_text_offset_xs[i] = max(-140, self.line_text_offset_xs[i] - self.font_position_step)
         self._debounced_update()
 
     def _move_text_right(self):
+        """Move all active text lines right by the current step size."""
         for i in range(3):
             if self.line_active[i]:
                 self.line_text_offset_xs[i] = min(140, self.line_text_offset_xs[i] + self.font_position_step)
         self._debounced_update()
 
     def _reset_to_default(self):
+        """Reset all icon settings to their default values.
+        
+        Restores all sliders, colors, positions, and effects to the initial
+        state defined in regular_default. Also clears the loaded game image.
+        """
         self._play_sound("delete.wav")
         d = self.regular_default
         self.line_hues = d["line_hues"][:]
@@ -823,50 +1068,59 @@ class SNESIconGenerator(ctk.CTk):
     # (All other methods are identical to the version you pasted — only the defaults, movement range, and template defaults were changed)
 
     def _decrease_font_size(self):
+        """Decrease font size for all active text lines."""
         for i in range(3):
             if self.line_active[i]:
                 self.line_font_size_offsets[i] = max(-100, self.line_font_size_offsets[i] - 1)
         self._debounced_update()
 
     def _increase_font_size(self):
+        """Increase font size for all active text lines."""
         for i in range(3):
             if self.line_active[i]:
                 self.line_font_size_offsets[i] = min(470, self.line_font_size_offsets[i] + 1)
         self._debounced_update()
 
     def _decrease_font_spacing(self):
+        """Decrease letter spacing (kerning) for all active text lines."""
         for i in range(3):
             if self.line_active[i]:
                 self.line_font_spacing_offsets[i] = max(-50, self.line_font_spacing_offsets[i] - 1)
         self._debounced_update()
 
     def _increase_font_spacing(self):
+        """Increase letter spacing (kerning) for all active text lines."""
         for i in range(3):
             if self.line_active[i]:
                 self.line_font_spacing_offsets[i] = min(500, self.line_font_spacing_offsets[i] + 1)
         self._debounced_update()
 
     def _decrease_line_spacing(self):
+        """Decrease vertical spacing between text lines."""
         self.line_spacing_offset = max(-200, self.line_spacing_offset - 1)
         self._debounced_update()
 
     def _increase_line_spacing(self):
+        """Increase vertical spacing between text lines."""
         self.line_spacing_offset = min(500, self.line_spacing_offset + 1)
         self._debounced_update()
 
     def _move_text_up(self):
+        """Move all active text lines up by the current step size."""
         for i in range(3):
             if self.line_active[i]:
                 self.line_text_offset_ys[i] = max(-110, self.line_text_offset_ys[i] - self.font_position_step)
         self._debounced_update()
 
     def _move_text_down(self):
+        """Move all active text lines down by the current step size."""
         for i in range(3):
             if self.line_active[i]:
                 self.line_text_offset_ys[i] = min(90, self.line_text_offset_ys[i] + self.font_position_step)
         self._debounced_update()
 
     def _cycle_position_step(self):
+        """Cycle the text position step size between 1-10 pixels."""
         self.font_position_step += 1
         if self.font_position_step > 10:
             self.font_position_step = 1
@@ -874,42 +1128,52 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_decor_toggle(self):
+        """Toggle decoration overlay visibility and show/hide controls."""
         self.decor_enabled = self.decor_var.get()
         if self.decor_var.get():
             self.decor_controls_frame.pack(fill="x", padx=15, pady=(0,12), after=self.decor_checkbox)
         else:
             self.decor_controls_frame.pack_forget()
         self._debounced_update()
+
     def _toggle_preserve_original_size(self):
-        """Toggle preserve original image size when re-uploading"""
+        """Toggle preserve original image size when re-uploading."""
         self.preserve_original_size = self.preserve_var.get()
+
     def _prev_decor(self):
+        """Cycle to previous decoration in the list."""
         if self.decor_files:
             self.current_decor_index = (self.current_decor_index - 1) % len(self.decor_files)
             self._debounced_update()
 
     def _next_decor(self):
+        """Cycle to next decoration in the list."""
         if self.decor_files:
             self.current_decor_index = (self.current_decor_index + 1) % len(self.decor_files)
             self._debounced_update()
 
     def _move_image_left(self):
+        """Move the main game image left by the current step size."""
         self.offset_x = max(-140, self.offset_x - self.image_position_step)
         self._debounced_update()
 
     def _move_image_right(self):
+        """Move the main game image right by the current step size."""
         self.offset_x = min(140, self.offset_x + self.image_position_step)
         self._debounced_update()
 
     def _move_image_up(self):
+        """Move the main game image up by the current step size."""
         self.offset_y = max(-140, self.offset_y - self.image_position_step)
         self._debounced_update()
 
     def _move_image_down(self):
+        """Move the main game image down by the current step size."""
         self.offset_y = min(140, self.offset_y + self.image_position_step)
         self._debounced_update()
 
     def _cycle_image_position_step(self):
+        """Cycle the image position step size between 1-10 pixels."""
         self.image_position_step += 1
         if self.image_position_step > 10:
             self.image_position_step = 1
@@ -917,6 +1181,10 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_bg_brightness(self, value):
+        """Handle background brightness slider change.
+        
+        Maps slider value (-100 to 200) to brightness (0.2 to 2.0).
+        """
         self.last_slider = self.bg_brightness_slider
         # Map slider value (-100 to 200) to brightness (0.2 to 2.0)
         self.bg_brightness = 0.2 + (float(value) + 100) / 300.0 * 1.8
@@ -926,6 +1194,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_bg_brightness_mouse_release(self):
+        """Snap background brightness to 1.0 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.bg_brightness - 1.0) < 0.05:
             self.bg_brightness = 1.0
@@ -937,6 +1206,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_bg_brightness_entry_changed(self):
+        """Handle background brightness entry field change.
+        
+        Validates input and clamps to valid range (0.2 to 2.0).
+        """
         try:
             value = float(self.bg_brightness_entry.get())
             # Clamp to valid range
@@ -954,6 +1227,11 @@ class SNESIconGenerator(ctk.CTk):
             self.bg_brightness_entry.insert(0, f"{self.bg_brightness:.2f}")
 
     def _on_bg_hue(self, value):
+        """Handle background hue slider change.
+        
+        Updates the background hue shift and updates the color preview
+        and RGB entry fields to reflect the new color.
+        """
         self.last_slider = self.bg_hue_slider
         self.bg_hue = float(value)
         # Update color preview and RGB entries
@@ -970,6 +1248,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_bg_hue_mouse_release(self):
+        """Snap background hue to 0 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.bg_hue) < 5:
             self.bg_hue = 0.0
@@ -986,6 +1265,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_bg_rgb_changed(self):
+        """Handle background RGB entry field change.
+        
+        Converts RGB values back to hue and updates the slider and preview.
+        """
         try:
             r = int(self.bg_r_entry.get())
             g = int(self.bg_g_entry.get())
@@ -1027,6 +1310,11 @@ class SNESIconGenerator(ctk.CTk):
             self.bg_b_entry.insert(0, str(color[2]))
 
     def _on_border_hue(self, value):
+        """Handle border/frame hue slider change.
+        
+        Updates the border hue shift and updates the color preview
+        and RGB entry fields to reflect the new color.
+        """
         self.last_slider = self.border_hue_slider
         self.border_hue = float(value)
         # Update color preview and RGB entries
@@ -1043,6 +1331,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_border_hue_mouse_release(self):
+        """Snap border hue to 0 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.border_hue) < 5:
             self.border_hue = 0.0
@@ -1059,6 +1348,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_border_rgb_changed(self):
+        """Handle border RGB entry field change.
+        
+        Converts RGB values back to hue and updates the slider and preview.
+        """
         try:
             r = int(self.border_r_entry.get())
             g = int(self.border_g_entry.get())
@@ -1100,6 +1393,7 @@ class SNESIconGenerator(ctk.CTk):
             self.border_b_entry.insert(0, str(color[2]))
 
     def _on_shadow_opacity(self, value):
+        """Handle shadow opacity slider change."""
         self.last_slider = self.shadow_opacity_slider
         self.shadow_opacity = int(value)
         self.shadow_opacity_entry.delete(0, "end")
@@ -1107,6 +1401,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_shadow_opacity_mouse_release(self):
+        """Snap shadow opacity to 100 when close to default on mouse release."""
         if abs(self.shadow_opacity - 100) < 5:
             self.shadow_opacity = 100
             self.shadow_opacity_slider.set(100)
@@ -1115,6 +1410,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_shadow_opacity_entry_changed(self):
+        """Handle shadow opacity entry field change.
+        
+        Validates input and clamps to valid range (0-100).
+        """
         try:
             value = int(self.shadow_opacity_entry.get())
             value = max(0, min(100, value))
@@ -1128,18 +1427,21 @@ class SNESIconGenerator(ctk.CTk):
             self.shadow_opacity_entry.insert(0, str(self.shadow_opacity))
 
     def _on_outline_toggle(self):
+        """Toggle text outline effect for all active text lines."""
         for i in range(3):
             if self.line_active[i]:
                 self.line_outlines[i] = self.outline_var.get()
         self._debounced_update()
 
     def _on_rainbow_toggle(self):
+        """Toggle rainbow color effect for all active text lines."""
         for i in range(3):
             if self.line_active[i]:
                 self.line_rainbows[i] = self.rainbow_var.get()
         self._debounced_update()
 
     def _on_glow_toggle(self):
+        """Toggle glow effect and show/hide glow controls frame."""
         self.glow_enabled = self.glow_var.get()
         if self.glow_var.get():
             self.glow_controls_frame.pack(fill="x", padx=15, pady=(0,12), after=self.glow_checkbox)
@@ -1159,6 +1461,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_glow_strength(self, value):
+        """Handle glow strength slider change."""
         self.last_slider = self.glow_strength_slider
         self.glow_strength = float(value)
         # Update entry field
@@ -1167,6 +1470,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_glow_strength_mouse_release(self):
+        """Snap glow strength to 1.0 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.glow_strength - 1.0) < 0.1:
             self.glow_strength = 1.0
@@ -1176,6 +1480,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_glow_strength_entry_changed(self):
+        """Handle glow strength entry field change.
+        
+        Validates input and clamps to valid range (0.0 to 2.0).
+        """
         try:
             value = float(self.glow_strength_entry.get())
             # Clamp to valid range
@@ -1188,9 +1496,13 @@ class SNESIconGenerator(ctk.CTk):
         except ValueError:
             # Restore previous value if invalid input
             self.glow_strength_entry.delete(0, "end")
-            self.glow_strength_entry.insert(0, f"{self.glow_strength:.2f}")
+            self.glow_strength_entry.insert(0,f"{self.glow_strength:.2f}")
 
     def _on_glow_color(self, value):
+        """Handle glow color hue slider change.
+        
+        Clears any direct RGB override and uses hue-based coloring.
+        """
         self.last_slider = self.glow_color_slider
         self.glow_color_hue = float(value)
         # Clear direct RGB override when using hue slider
@@ -1210,6 +1522,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_glow_color_mouse_release(self):
+        """Snap glow color hue to 0 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.glow_color_hue) < 5:
             self.glow_color_hue = 0.0
@@ -1226,6 +1539,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_glow_rgb_changed(self):
+        """Handle glow RGB entry field change.
+        
+        Sets direct RGB override for glow color and updates slider display.
+        """
         try:
             r = int(self.glow_r_entry.get())
             g = int(self.glow_g_entry.get())
@@ -1284,6 +1601,7 @@ class SNESIconGenerator(ctk.CTk):
                 self.glow_b_entry.insert(0, str(color[2]))
 
     def _on_glow_size(self, value):
+        """Handle glow size/radius slider change."""
         self.last_slider = self.glow_size_slider
         self.glow_size = int(value)
         # Update entry field
@@ -1292,6 +1610,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_glow_size_mouse_release(self):
+        """Snap glow size to 5 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.glow_size - 5) < 1:
             self.glow_size = 5
@@ -1301,6 +1620,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_glow_size_entry_changed(self):
+        """Handle glow size entry field change.
+        
+        Validates input and clamps to valid range (1-10).
+        """
         try:
             value = int(self.glow_size_entry.get())
             # Clamp to valid range
@@ -1316,21 +1639,25 @@ class SNESIconGenerator(ctk.CTk):
             self.glow_size_entry.insert(0, str(self.glow_size))
 
     def _on_zoom(self, value):
+        """Handle zoom level slider change."""
         self.last_slider = self.zoom_slider
         self.zoom_level = int(value)
         self._debounced_update()
 
     def _on_x_offset(self, value):
+        """Handle horizontal image offset slider change."""
         self.last_slider = self.x_slider
         self.offset_x = int(value)
         self._debounced_update()
 
     def _on_y_offset(self, value):
+        """Handle vertical image offset slider change."""
         self.last_slider = self.y_slider
         self.offset_y = int(value)
         self._debounced_update()
 
     def _on_stretch_x(self, value):
+        """Handle horizontal stretch slider change."""
         self.last_slider = self.stretch_x_slider
         self.stretch_x = float(value)
         # Update entry field
@@ -1339,6 +1666,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_stretch_x_mouse_release(self):
+        """Snap horizontal stretch to 1.0 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.stretch_x - 1.0) < 0.05:
             self.stretch_x = 1.0
@@ -1348,6 +1676,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_stretch_x_entry_changed(self):
+        """Handle horizontal stretch entry field change.
+        
+        Validates input and clamps to valid range (0.5 to 2.0).
+        """
         try:
             value = float(self.stretch_x_entry.get())
             # Clamp to valid range
@@ -1363,6 +1695,7 @@ class SNESIconGenerator(ctk.CTk):
             self.stretch_x_entry.insert(0, f"{self.stretch_x:.2f}")
 
     def _on_stretch_y(self, value):
+        """Handle vertical stretch slider change."""
         self.last_slider = self.stretch_y_slider
         self.stretch_y = float(value)
         # Update entry field
@@ -1371,6 +1704,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_stretch_y_mouse_release(self):
+        """Snap vertical stretch to 1.0 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.stretch_y - 1.0) < 0.05:
             self.stretch_y = 1.0
@@ -1380,6 +1714,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_stretch_y_entry_changed(self):
+        """Handle vertical stretch entry field change.
+        
+        Validates input and clamps to valid range (0.5 to 2.0).
+        """
         try:
             value = float(self.stretch_y_entry.get())
             # Clamp to valid range
@@ -1395,6 +1733,7 @@ class SNESIconGenerator(ctk.CTk):
             self.stretch_y_entry.insert(0, f"{self.stretch_y:.2f}")
 
     def _on_brightness(self, value):
+        """Handle main image brightness slider change."""
         self.last_slider = self.brightness_slider
         self.brightness = float(value)
         # Update entry field
@@ -1403,6 +1742,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_brightness_mouse_release(self):
+        """Snap brightness to 0.9 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.brightness - 0.9) < 0.05:
             self.brightness = 0.9
@@ -1412,6 +1752,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_brightness_entry_changed(self):
+        """Handle brightness entry field change.
+        
+        Validates input and clamps to valid range (0.1 to 2.0).
+        """
         try:
             value = float(self.brightness_entry.get())
             # Clamp to valid range
@@ -1427,6 +1771,7 @@ class SNESIconGenerator(ctk.CTk):
             self.brightness_entry.insert(0, f"{self.brightness:.2f}")
 
     def _on_zoom(self, value):
+        """Handle zoom level slider change with entry field update."""
         self.last_slider = self.zoom_slider
         self.zoom_level = int(value)
         # Update entry field
@@ -1435,6 +1780,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_zoom_mouse_release(self):
+        """Snap zoom level to 50 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.zoom_level - 50) < 5:
             self.zoom_level = 50
@@ -1444,6 +1790,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_zoom_entry_changed(self):
+        """Handle zoom level entry field change.
+        
+        Validates input and clamps to valid range (-100 to 200).
+        """
         try:
             value = int(self.zoom_entry.get())
             # Clamp to valid range
@@ -1459,6 +1809,7 @@ class SNESIconGenerator(ctk.CTk):
             self.zoom_entry.insert(0, str(self.zoom_level))
 
     def _on_x_offset(self, value):
+        """Handle horizontal image offset slider change with entry field update."""
         self.last_slider = self.x_slider
         self.offset_x = int(value)
         # Update entry field
@@ -1467,6 +1818,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_x_offset_mouse_release(self):
+        """Snap horizontal offset to 0 when close to center on mouse release."""
         # Check for snap when mouse is released
         if abs(self.offset_x) < 5:
             self.offset_x = 0
@@ -1476,6 +1828,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_x_entry_changed(self):
+        """Handle horizontal offset entry field change.
+        
+        Validates input and clamps to valid range (-140 to 140).
+        """
         try:
             value = int(self.x_entry.get())
             # Clamp to valid range
@@ -1491,6 +1847,7 @@ class SNESIconGenerator(ctk.CTk):
             self.x_entry.insert(0, str(self.offset_x))
 
     def _on_y_offset(self, value):
+        """Handle vertical image offset slider change with entry field update."""
         self.last_slider = self.y_slider
         self.offset_y = int(value)
         # Update entry field
@@ -1499,6 +1856,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_y_offset_mouse_release(self):
+        """Snap vertical offset to 0 when close to center on mouse release."""
         # Check for snap when mouse is released
         if abs(self.offset_y) < 5:
             self.offset_y = 0
@@ -1508,6 +1866,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_y_entry_changed(self):
+        """Handle vertical offset entry field change.
+        
+        Validates input and clamps to valid range (-140 to 140).
+        """
         try:
             value = int(self.y_entry.get())
             # Clamp to valid range
@@ -1523,6 +1885,10 @@ class SNESIconGenerator(ctk.CTk):
             self.y_entry.insert(0, str(self.offset_y))
 
     def _on_hue(self, value):
+        """Handle text hue slider change for active text lines.
+        
+        Updates hue for all active lines and clears any direct RGB overrides.
+        """
         self.last_slider = self.hue_slider
         for i in range(3):
             if self.line_active[i]:
@@ -1544,6 +1910,10 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_text_rgb_changed(self):
+        """Handle text RGB entry field change.
+        
+        Sets direct RGB override for all active text lines.
+        """
         try:
             r = int(self.text_r_entry.get())
             g = int(self.text_g_entry.get())
@@ -1597,6 +1967,7 @@ class SNESIconGenerator(ctk.CTk):
             self.text_b_entry.insert(0, str(color[2]))
 
     def _on_opacity(self, value):
+        """Handle CRT scanline opacity slider change."""
         self.last_slider = self.opacity_slider
         self.scanline_alpha = int(value)
         self.opacity_entry.delete(0, "end")
@@ -1604,6 +1975,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_opacity_mouse_release(self):
+        """Snap scanline opacity to 20 when close to default on mouse release."""
         if abs(self.scanline_alpha - 20) < 5:
             self.scanline_alpha = 20
             self.opacity_slider.set(20)
@@ -1612,6 +1984,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_opacity_entry_changed(self):
+        """Handle scanline opacity entry field change.
+        
+        Validates input and clamps to valid range (0-100).
+        """
         try:
             value = int(self.opacity_entry.get())
             value = max(0, min(100, value))
@@ -1625,31 +2001,37 @@ class SNESIconGenerator(ctk.CTk):
             self.opacity_entry.insert(0, str(self.scanline_alpha))
 
     def _on_bg_scale(self, value):
+        """Handle background scale slider change."""
         self.last_slider = self.bg_scale_slider
         self.bg_scale = float(value)
         self._debounced_update()
 
     def _on_bg_offset_x(self, value):
+        """Handle background horizontal offset slider change."""
         self.last_slider = self.bg_offset_x_slider
         self.bg_offset_x = int(value)
         self._debounced_update()
 
     def _on_bg_offset_y(self, value):
+        """Handle background vertical offset slider change."""
         self.last_slider = self.bg_offset_y_slider
         self.bg_offset_y = int(value)
         self._debounced_update()
 
     def _on_frame_offset_x(self, value):
+        """Handle frame/border horizontal offset slider change."""
         self.last_slider = self.frame_offset_x_slider
         self.frame_offset_x = int(value)
         self._debounced_update()
 
     def _on_frame_offset_y(self, value):
+        """Handle frame/border vertical offset slider change."""
         self.last_slider = self.frame_offset_y_slider
         self.frame_offset_y = int(value)
         self._debounced_update()
 
     def _on_decor_scale(self, value):
+        """Handle decoration scale slider change."""
         self.last_slider = self.decor_scale_slider
         self.decor_scale = float(value)
         # Update entry field
@@ -1658,6 +2040,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_decor_scale_mouse_release(self):
+        """Snap decoration scale to 1.0 when close to default on mouse release."""
         # Check for snap when mouse is released
         if abs(self.decor_scale - 1.0) < 0.05:
             self.decor_scale = 1.0
@@ -1667,6 +2050,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_decor_scale_entry_changed(self):
+        """Handle decoration scale entry field change.
+        
+        Validates input and clamps to valid range (0.5 to 2.0).
+        """
         try:
             value = float(self.decor_scale_entry.get())
             # Clamp to valid range
@@ -1682,6 +2069,7 @@ class SNESIconGenerator(ctk.CTk):
             self.decor_scale_entry.insert(0, f"{self.decor_scale:.2f}")
 
     def _on_decor_pos_x(self, value):
+        """Handle decoration horizontal position slider change."""
         self.last_slider = self.decor_offset_x_slider
         self.decor_offset_x = int(value)
         # Update entry field
@@ -1690,6 +2078,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_decor_pos_x_mouse_release(self):
+        """Snap decoration horizontal position to 0 when close to center on mouse release."""
         # Check for snap when mouse is released
         if abs(self.decor_offset_x) < 2:
             self.decor_offset_x = 0
@@ -1699,6 +2088,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_decor_pos_x_entry_changed(self):
+        """Handle decoration horizontal position entry field change.
+        
+        Validates input and clamps to valid range (-30 to 30).
+        """
         try:
             value = int(self.decor_offset_x_entry.get())
             # Clamp to valid range
@@ -1714,6 +2107,7 @@ class SNESIconGenerator(ctk.CTk):
             self.decor_offset_x_entry.insert(0, str(self.decor_offset_x))
 
     def _on_decor_pos_y(self, value):
+        """Handle decoration vertical position slider change."""
         self.last_slider = self.decor_offset_y_slider
         self.decor_offset_y = int(value)
         # Update entry field
@@ -1722,6 +2116,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_decor_pos_y_mouse_release(self):
+        """Snap decoration vertical position to 0 when close to center on mouse release."""
         # Check for snap when mouse is released
         if abs(self.decor_offset_y) < 2:
             self.decor_offset_y = 0
@@ -1731,6 +2126,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_decor_pos_y_entry_changed(self):
+        """Handle decoration vertical position entry field change.
+        
+        Validates input and clamps to valid range (-30 to 30).
+        """
         try:
             value = int(self.decor_offset_y_entry.get())
             # Clamp to valid range
@@ -1746,6 +2145,10 @@ class SNESIconGenerator(ctk.CTk):
             self.decor_offset_y_entry.insert(0, str(self.decor_offset_y))
 
     def _keyboard_slider_left(self, event=None):
+        """Decrease the last-used slider by one step using keyboard.
+        
+        Allows keyboard control of sliders for accessibility.
+        """
         if self.last_slider is None: return
         val = self.last_slider.get()
         from_val = self.last_slider.cget("from_")
@@ -1758,6 +2161,10 @@ class SNESIconGenerator(ctk.CTk):
         if callable(cmd): cmd(new_val)
 
     def _keyboard_slider_right(self, event=None):
+        """Increase the last-used slider by one step using keyboard.
+        
+        Allows keyboard control of sliders for accessibility.
+        """
         if self.last_slider is None: return
         val = self.last_slider.get()
         from_val = self.last_slider.cget("from_")
@@ -1770,10 +2177,12 @@ class SNESIconGenerator(ctk.CTk):
         if callable(cmd): cmd(new_val)
 
     def _on_curve(self):
+        """Handle curve toggle (currently disabled/not implemented)."""
         self.curve_enabled = False
         self._debounced_update()
 
     def _on_crt(self):
+        """Toggle CRT scanline effect and show/hide controls."""
         self.crt_enabled = self.crt_var.get()
         if self.crt_var.get():
             if hasattr(self, 'scanline_controls_frame'):
@@ -1786,17 +2195,27 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _hide_background_selector(self):
+        """Hide the background navigation arrows and label."""
         self.bg_left_arrow.grid_remove()
         self.bg_label.grid_remove()
         self.bg_right_arrow.grid_remove()
 
     def _show_background_selector(self):
+        """Show the background navigation arrows and label."""
         self.bg_left_arrow.grid()
         self.bg_label.grid()
         self.bg_right_arrow.grid()
 
     def _get_text_color(self, line_idx, use_data=None):
-        """Get text color for a specific line, checking for direct RGB override"""
+        """Get text color for a specific line, checking for direct RGB override.
+        
+        Args:
+            line_idx: Index of the text line (0-2)
+            use_data: Data object containing color settings (self or template data)
+            
+        Returns:
+            RGB color tuple for the text
+        """
         if use_data is None:
             use_data = self
         
@@ -1809,7 +2228,14 @@ class SNESIconGenerator(ctk.CTk):
         return self._get_solid_color(use_data.line_hues[line_idx])
 
     def _get_glow_color(self, use_data=None):
-        """Get glow color, checking for direct RGB override"""
+        """Get glow color, checking for direct RGB override.
+        
+        Args:
+            use_data: Data object containing glow color settings (self or template data)
+            
+        Returns:
+            RGB color tuple for the glow effect
+        """
         if use_data is None:
             use_data = self
         
@@ -1820,6 +2246,17 @@ class SNESIconGenerator(ctk.CTk):
         return self._get_solid_color(use_data.glow_color_hue)
 
     def _get_solid_color(self, value):
+        """Convert a hue value (0-360) to an RGB color tuple.
+        
+        Uses a custom color palette with vibrant colors for text and effects.
+        The palette transitions through yellow, orange, red, magenta, blue, cyan, and gray.
+        
+        Args:
+            value: Hue value in degrees (0-360)
+            
+        Returns:
+            RGB color tuple (r, g, b) with values 0-255
+        """
         t = max(0.0, min(1.0, value / 360.0))
         if t < 0.25:
             tt = t / 0.25
@@ -1842,6 +2279,16 @@ class SNESIconGenerator(ctk.CTk):
             return (gray, gray, gray)
 
     def _hue_to_rgb(self, hue):
+        """Convert a hue value (0-360) to an RGB color tuple using standard HSV to RGB.
+        
+        Uses the standard 6-segment HSV color wheel conversion.
+        
+        Args:
+            hue: Hue value in degrees (0-360)
+            
+        Returns:
+            RGB color tuple (r, g, b) with values 0-255
+        """
         h = hue / 360.0
         i = int(h * 6)
         f = h * 6 - i
@@ -1853,9 +2300,22 @@ class SNESIconGenerator(ctk.CTk):
         return (255, 0, int(255*(1-f)))
 
     def _get_scale(self):
+        """Convert zoom level to image scale factor.
+        
+        Maps zoom level (-100 to 200) to scale factor (0.2 to 2.0).
+        
+        Returns:
+            Scale factor as a float
+        """
         return 0.2 + ((self.zoom_level + 100) / 200.0) * 1.8
 
     def _precompute_distortion_map(self):
+        """Precompute a radial distortion map for image warping effects.
+        
+        Creates a lookup table mapping each pixel to its source position
+        based on radial distance from the distortion center. Used for
+        barrel/pincushion distortion effects.
+        """
         distortion_map = []
         sx = self.curve_strength_x
         sy = self.curve_strength_y
@@ -1876,6 +2336,16 @@ class SNESIconGenerator(ctk.CTk):
         self.distortion_map = distortion_map
 
     def _apply_fast_distortion(self, img):
+        """Apply the precomputed distortion map to an image.
+        
+        Uses the distortion map lookup table to warp the image pixels.
+        
+        Args:
+            img: PIL Image to distort
+            
+        Returns:
+            Distorted PIL Image
+        """
         result = Image.new("RGBA", img.size, (0, 0, 0, 0))
         w, h = img.size
         pixels = img.load()
@@ -2470,6 +2940,7 @@ class SNESIconGenerator(ctk.CTk):
         self.decor_controls_frame.pack_forget()
 
     def _update_dynamic_labels(self):
+        """Update UI labels to show current asset selections and font settings."""
         self.bg_label.configure(text=f"Background: {self.current_bg_index + 1}")
         self.frame_label.configure(text=f"Frame: {self.current_frame_index + 1}")
         if self.font_files:
@@ -2490,11 +2961,21 @@ class SNESIconGenerator(ctk.CTk):
         self.line_spacing_label.configure(text=f"Line Spacing: {self.line_spacing_offset}px")
 
     def _toggle_line(self, idx):
+        """Toggle visibility of a specific text line.
+        
+        Args:
+            idx: Line index (0-2)
+        """
         self.line_active[idx] = not self.line_active[idx]
         self.line_toggle_buttons[idx].configure(fg_color="#00ff00" if self.line_active[idx] else "#555555")
         self._debounced_update()
 
     def _get_filename_base(self):
+        """Generate a safe filename base from the text lines.
+        
+        Returns:
+            Sanitized filename string with only alphanumeric characters and underscores
+        """
         lines = [l.strip() for l in self.title_lines if l.strip()]
         if not lines:
             return "snes-icon"
@@ -2502,7 +2983,10 @@ class SNESIconGenerator(ctk.CTk):
         return "".join(c for c in raw if c.isalnum() or c in "_-") or "snes-icon"
 
     def _save_image(self):
-        """Save the current icon as PNG"""
+        """Save the current icon as PNG or ICO.
+        
+        Renders the final image and shows a popup with save options.
+        """
         try:
             # Render the final image
             final_img = self._composite_image(for_preview=False)
@@ -2531,6 +3015,12 @@ class SNESIconGenerator(ctk.CTk):
             messagebox.showerror("Save Error", f"Failed to save image: {str(e)}")
 
     def _show_save_popup(self, final_img, base_name):
+        """Show the save options popup with image preview.
+        
+        Args:
+            final_img: The rendered PIL Image to save
+            base_name: Base filename for the saved file
+        """
         try:
             # Create a completely new image copy to avoid reference issues
             new_img = Image.new("RGBA", final_img.size, (0, 0, 0, 0))
@@ -2551,6 +3041,10 @@ class SNESIconGenerator(ctk.CTk):
                 pass
 
     def _create_save_popup(self, final_img, base_name):
+        """Create and display the save options popup window.
+        
+        Shows a preview of the icon and buttons to save as PNG or ICO.
+        """
         try:
             popup = ctk.CTkToplevel(self)
             popup.title("Save Options")
@@ -2667,7 +3161,11 @@ class SNESIconGenerator(ctk.CTk):
             messagebox.showerror("Save Error", f"Failed to save PNG: {str(e)}")
 
     def _save_as_icon(self, final_img, base_name, popup):
-        """Save as ICO only and open folder"""
+        """Save as ICO file with multiple sizes and open folder.
+        
+        Creates an ICO file with resolutions from 16x16 to 256x256 for
+        Windows icon compatibility. Also saves the original image to storage.
+        """
         self._play_sound("keep.wav")
         try:
             icons_dir = os.path.join(SCRIPT_DIR, "Icons")
@@ -2737,13 +3235,24 @@ class SNESIconGenerator(ctk.CTk):
             messagebox.showerror("Icon Save Error", f"Failed to save .ico file: {str(e)}")
 
     def show_save_confirmation(self, name):
+        """Display a confirmation message in the status label.
+        
+        Args:
+            name: Name of the saved file to display
+        """
         self.status_label.configure(text=f"{name}\n✅", text_color="#2ecc71")
         self.after(3000, self.clear_status)
 
     def clear_status(self):
+        """Clear the status label text."""
         self.status_label.configure(text="")
 
     def _play_sound(self, filename):
+        """Play a sound effect from the sounds directory.
+        
+        Args:
+            filename: Name of the sound file to play
+        """
         path = os.path.join(SOUND_DIR, filename)
         if os.path.exists(path):
             try:
@@ -2752,6 +3261,7 @@ class SNESIconGenerator(ctk.CTk):
                 pass
 
     def _prev_background(self):
+        """Cycle to previous background in the list."""
         if self.bg_files and not self.curve_enabled:
             # If currently using a custom background (index >= len(bg_files)), reset to first background
             if self.current_bg_index >= len(self.bg_files):
@@ -2761,6 +3271,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _search_for_image(self):
+        """Open a web browser to search for transparent PNG images.
+        
+        Uses pngaaa.com as the image source.
+        """
         search_term = self.search_entry.get().strip()
         if search_term:
             # URL encode the search term
@@ -2777,6 +3291,10 @@ class SNESIconGenerator(ctk.CTk):
             webbrowser.open("https://www.pngaaa.com/")
 
     def _randomize_settings(self):
+        """Randomize background, frame, and color settings.
+        
+        Randomly selects backgrounds, frames, and hue values for variety.
+        """
         if self.bg_files and not self.curve_enabled:
             self.current_bg_index = random.randrange(len(self.bg_files))
         if self.frame_files and not self.curve_enabled:
@@ -2855,6 +3373,7 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _next_background(self):
+        """Cycle to next background in the list."""
         if self.bg_files and not self.curve_enabled:
             # If currently using a custom background (index >= len(bg_files)), reset to first background
             if self.current_bg_index >= len(self.bg_files):
@@ -2864,16 +3383,19 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _prev_frame(self):
+        """Cycle to previous frame/border in the list."""
         if self.frame_files and not self.curve_enabled:
             self.current_frame_index = (self.current_frame_index - 1) % len(self.frame_files)
             self._debounced_update()
 
     def _next_frame(self):
+        """Cycle to next frame/border in the list."""
         if self.frame_files and not self.curve_enabled:
             self.current_frame_index = (self.current_frame_index + 1) % len(self.frame_files)
             self._debounced_update()
 
     def _prev_font(self):
+        """Cycle to previous font, skipping template fonts."""
         if self.font_files:
             start = self.current_font_index
             while True:
@@ -2886,6 +3408,7 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _next_font(self):
+        """Cycle to next font, skipping template fonts."""
         if self.font_files:
             start = self.current_font_index
             while True:
@@ -2898,6 +3421,10 @@ class SNESIconGenerator(ctk.CTk):
             self._debounced_update()
 
     def _on_paragraph_change(self, event=None):
+        """Handle text input changes with automatic word wrapping.
+        
+        Wraps text at 12 characters per line and limits to 3 lines maximum.
+        """
         text = self.paragraph_entry.get("1.0", "end-1c")
         
         # Handle word wrapping at 12 characters
@@ -2963,6 +3490,10 @@ class SNESIconGenerator(ctk.CTk):
         self._debounced_update()
 
     def _on_paragraph_key_press(self, event):
+        """Handle key presses in the text entry with line and character limits.
+        
+        Prevents typing beyond 3 lines and 36 total characters.
+        """
         # Get current text and cursor position
         text = self.paragraph_entry.get("1.0", "end-1c")
         lines = text.split('\n')
@@ -2988,6 +3519,7 @@ class SNESIconGenerator(ctk.CTk):
         return None
 
     def _on_paragraph_enter(self, event=None):
+        """Handle Enter key - limit to 3 lines."""
         # Handle Enter key - limit to 3 lines
         text = self.paragraph_entry.get("1.0", "end-1c")
         lines = text.split('\n')
@@ -3000,14 +3532,21 @@ class SNESIconGenerator(ctk.CTk):
         return None
 
     def _on_title_change(self, event=None):
+        """Placeholder for backward compatibility with templates."""
         # Keep this for backward compatibility with templates
         pass
 
     def _on_enter_pressed(self, event):
+        """Placeholder for backward compatibility."""
         # Keep this for backward compatibility
         return "break"
 
     def _load_image(self):
+        """Load an image file to use as the main game image.
+        
+        Opens a file dialog and loads the selected image. If preserve mode
+        is enabled, keeps current position settings.
+        """
         path = filedialog.askopenfilename(
             filetypes=[("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.webp *.tiff")]
         )
@@ -3043,7 +3582,10 @@ class SNESIconGenerator(ctk.CTk):
             messagebox.showerror("Load Error", f"Failed to load image:\n{str(e)}")
 
     def _update_slider_values(self):
-        """Update all slider values and entries after image upload"""
+        """Update all slider values and entries after image upload.
+        
+        Syncs the UI sliders and entry fields with the current internal values.
+        """
         # Update stretch sliders
         self.stretch_x_slider.set(self.stretch_x)
         self.stretch_x_entry.delete(0, "end")
@@ -3068,6 +3610,10 @@ class SNESIconGenerator(ctk.CTk):
         self.zoom_entry.insert(0, str(self.zoom_level))
 
     def _load_template_image(self):
+        """Load an image from the storage directory for use as game image.
+        
+        Automatically calculates optimal stretch and position to fit the icon.
+        """
         self._play_sound("upload.wav")
         path = filedialog.askopenfilename(initialdir=STORAGE_DIR, title="Select Template Image", filetypes=[("PNG Images", "*.png")])
         if path:
@@ -3108,6 +3654,10 @@ class SNESIconGenerator(ctk.CTk):
                 messagebox.showerror("Load Error", str(e))
 
     def _open_template_popup(self):
+        """Open the template save/load popup window.
+        
+        Shows 6 template slots with previews and save/load buttons.
+        """
         self._load_asset_lists()
         self._load_current_fonts()
         popup = ctk.CTkToplevel(self)
@@ -3131,7 +3681,15 @@ class SNESIconGenerator(ctk.CTk):
             ctk.CTkButton(btn_row, text="Load", width=80, fg_color="#3498db", hover_color="#2980b9", command=lambda x=i: self._load_from_template(x, popup)).pack(side="left", padx=6)
 
     def _save_to_template(self, idx, popup=None):
-        """Save template with all assets in individual folder"""
+        """Save current icon settings and assets to a template slot.
+        
+        Saves all settings to JSON and copies assets (game image, background,
+        frame, font) to the template folder.
+        
+        Args:
+            idx: Template slot index (0-5)
+            popup: Popup window to close after saving
+        """
         import json
         import shutil
         
@@ -3271,7 +3829,15 @@ class SNESIconGenerator(ctk.CTk):
         self.show_save_confirmation(f"Template {idx+1} Saved!")
 
     def _load_from_template(self, idx, popup=None):
-        """Load template from folder with all assets"""
+        """Load template settings and assets from a template slot.
+        
+        Loads settings from JSON and restores assets (game image, background,
+        frame, font). Handles both regular and custom backgrounds.
+        
+        Args:
+            idx: Template slot index (0-5)
+            popup: Popup window to close after loading
+        """
         import json
         
         template_folder = os.path.join(STORAGE_DIR, f"template_{idx}")
@@ -3588,19 +4154,48 @@ class SNESIconGenerator(ctk.CTk):
         self.show_save_confirmation(f"Template {idx+1} Loaded!")
 
     def _start_repeat(self, func):
+        """Start repeating a function when a button is held down.
+        
+        Args:
+            func: The function to repeat
+        """
         func()
         self._repeat_id = self.after(250, lambda f=func: self._do_repeat(f))
 
     def _do_repeat(self, func):
+        """Continue repeating a function at a faster rate.
+        
+        Args:
+            func: The function to repeat
+        """
         func()
         self._repeat_id = self.after(60, lambda f=func: self._do_repeat(f))
 
     def _stop_repeat(self):
+        """Stop the repeating function."""
         if self._repeat_id is not None:
             self.after_cancel(self._repeat_id)
             self._repeat_id = None
 
     def _create_repeatable_arrow(self, parent, image, command, row, column, width=50, height=32, padx=8, pady=4):
+        """Create a button with repeat functionality for arrow navigation.
+        
+        When held down, the button will repeatedly trigger the command.
+        
+        Args:
+            parent: Parent widget
+            image: Button image
+            command: Function to execute on click/hold
+            row: Grid row position
+            column: Grid column position
+            width: Button width
+            height: Button height
+            padx: Horizontal padding
+            pady: Vertical padding
+            
+        Returns:
+            The created button widget
+        """
         btn = ctk.CTkButton(parent, image=image, text="", width=width, height=height)
         btn.grid(row=row, column=column, padx=padx, pady=pady)
         btn.bind("<ButtonPress-1>", lambda e, f=command: self._start_repeat(f))
@@ -3608,6 +4203,10 @@ class SNESIconGenerator(ctk.CTk):
         return btn
 
     def _load_templates(self):
+        """Load template metadata from JSON file.
+        
+        Loads the template list from storage or creates defaults if not found.
+        """
         template_path = os.path.join(TEMPLATE_DIR, "templatesaves.txt")
         if os.path.exists(template_path):
             try:
@@ -3626,6 +4225,7 @@ class SNESIconGenerator(ctk.CTk):
         self._save_templates()
 
     def _save_templates(self):
+        """Save template metadata to JSON file."""
         template_path = os.path.join(TEMPLATE_DIR, "templatesaves.txt")
         try:
             with open(template_path, "w", encoding="utf-8") as f:
@@ -3635,7 +4235,14 @@ class SNESIconGenerator(ctk.CTk):
             messagebox.showerror("Save Error", f"Could not save templates:\n{str(e)}")
 
     def _generate_earthbound_background(self):
-        """Generate a background using Earthbound-style mathematical patterns"""
+        """Generate a background using Earthbound-style mathematical patterns.
+        
+        Creates psychedelic, retro-style backgrounds with vibrant colors
+        and geometric patterns inspired by the Earthbound/Mother RPG series.
+        
+        Returns:
+            PIL Image with the generated background pattern
+        """
         # Earthbound-style pattern names
         pattern_names = [
             "Distorted Checkerboard",
@@ -4990,7 +5597,11 @@ class SNESIconGenerator(ctk.CTk):
         return img
     
     def _open_background_generator(self):
-        """Open the background generator popup"""
+        """Open the background generator popup window.
+        
+        Creates a popup with preview, zoom/hue controls, and buttons to
+        generate, save, and load custom backgrounds.
+        """
         popup = ctk.CTkToplevel(self)
         popup.title("Background Generator")
         popup.geometry("450x700")
@@ -5070,7 +5681,11 @@ class SNESIconGenerator(ctk.CTk):
         self.bg_generator_popup = popup
     
     def _update_background_display(self):
-        """Update the background display with current zoom and hue settings"""
+        """Update the background display with current zoom and hue settings.
+        
+        Applies zoom scaling and hue shift to the generated background
+        and updates the preview display.
+        """
         # Apply zoom
         if self.generated_bg_zoom != 1.0:
             new_size = int(256 * self.generated_bg_zoom)
@@ -5107,7 +5722,10 @@ class SNESIconGenerator(ctk.CTk):
                 pass
 
     def _save_generated_background(self):
-        """Save the generated background to the Generated Backgrounds folder"""
+        """Save the generated background to the Generated Backgrounds folder.
+        
+        Saves with a timestamped filename and handles duplicate naming.
+        """
         from datetime import datetime
         
         # Get current date and use a simple pattern name
@@ -5134,7 +5752,15 @@ class SNESIconGenerator(ctk.CTk):
         messagebox.showinfo("Success", f"Background saved as {filename}")
 
     def _apply_hue_shift(self, img, hue_shift):
-        """Apply hue shift to an image"""
+        """Apply hue shift to an image.
+        
+        Args:
+            img: PIL Image to shift
+            hue_shift: Hue shift amount in degrees (0-360)
+            
+        Returns:
+            PIL Image with hue-shifted colors
+        """
         import colorsys
         # Convert to RGBA to preserve alpha channel
         if img.mode != 'RGBA':
@@ -5163,7 +5789,16 @@ class SNESIconGenerator(ctk.CTk):
         return img
     
     def _rgb_to_hsv(self, r, g, b):
-        """Convert RGB to HSV"""
+        """Convert RGB color values to HSV.
+        
+        Args:
+            r: Red component (0-255)
+            g: Green component (0-255)
+            b: Blue component (0-255)
+            
+        Returns:
+            Tuple of (hue, saturation, value) where hue is 0-360, s and v are 0-1
+        """
         r, g, b = r/255.0, g/255.0, b/255.0
         mx = max(r, g, b)
         mn = min(r, g, b)
@@ -5183,7 +5818,16 @@ class SNESIconGenerator(ctk.CTk):
         return h, s, v
     
     def _hsv_to_rgb(self, h, s, v):
-        """Convert HSV to RGB"""
+        """Convert HSV color values to RGB.
+        
+        Args:
+            h: Hue component (0-360)
+            s: Saturation component (0-1)
+            v: Value component (0-1)
+            
+        Returns:
+            Tuple of (red, green, blue) with values 0-255
+        """
         h = h/60
         c = v * s
         x = c * (1 - abs((h % 2) - 1))
@@ -5208,19 +5852,19 @@ class SNESIconGenerator(ctk.CTk):
         return r, g, b
     
     def _on_bg_zoom_change(self, value):
-        """Handle zoom slider change"""
+        """Handle zoom slider change in background generator."""
         self.generated_bg_zoom = value
         self.bg_zoom_label.configure(text=f"{value:.1f}x")
         self._update_background_display()
     
     def _on_bg_hue_change(self, value):
-        """Handle hue slider change"""
+        """Handle hue slider change in background generator."""
         self.generated_bg_hue = int(value)
         self.bg_hue_label.configure(text=f"{int(value)}°")
         self._update_background_display()
     
     def _regenerate_background(self):
-        """Regenerate a new background"""
+        """Regenerate a new random background pattern."""
         self.generated_bg = self._generate_earthbound_background()
         self.generated_bg_original = self.generated_bg.copy()
         
@@ -5238,7 +5882,11 @@ class SNESIconGenerator(ctk.CTk):
         self.pattern_name_label.configure(text=f"Pattern: {self.current_pattern_name}")
     
     def _save_generated_background(self):
-        """Save the generated background to the Generated Backgrounds folder"""
+        """Save the generated background to the Generated Backgrounds folder.
+        
+        Uses numbered naming (Custombg_1.png, Custombg_2.png, etc.)
+        to maintain order.
+        """
         # Find next available number
         existing_files = [f for f in os.listdir(GENERATED_BG_DIR) if f.startswith("Custombg_") and f.endswith(".png")]
         numbers = []
@@ -5265,7 +5913,13 @@ class SNESIconGenerator(ctk.CTk):
         messagebox.showinfo("Success", f"Background saved as {filename}")
     
     def _open_load_background_popup(self, parent_popup):
-        """Open a popup to load and manage custom backgrounds"""
+        """Open a popup to load and manage custom backgrounds.
+        
+        Shows a grid of saved custom backgrounds with load and delete buttons.
+        
+        Args:
+            parent_popup: The parent background generator popup
+        """
         popup = ctk.CTkToplevel(self)
         popup.title("Load Custom Background")
         popup.geometry("800x600")
@@ -5326,7 +5980,12 @@ class SNESIconGenerator(ctk.CTk):
                      width=100, height=40, command=popup.destroy).pack(pady=10)
     
     def _load_custom_background(self, filename, popup):
-        """Load a custom background and apply it to the current icon"""
+        """Load a custom background and apply it to the current icon.
+        
+        Args:
+            filename: Name of the custom background file
+            popup: The load popup to close after loading
+        """
         try:
             bg_path = os.path.join(GENERATED_BG_DIR, filename)
             
@@ -5356,7 +6015,15 @@ class SNESIconGenerator(ctk.CTk):
             messagebox.showerror("Error", f"Failed to load background: {str(e)}")
     
     def _delete_custom_background(self, filename, popup):
-        """Delete a custom background and rename others to maintain order"""
+        """Delete a custom background and rename others to maintain order.
+        
+        After deletion, renumbers remaining backgrounds to fill the gap
+        and updates any templates that referenced the deleted background.
+        
+        Args:
+            filename: Name of the background file to delete
+            popup: The load popup to refresh after deletion
+        """
         try:
             # Confirm deletion
             result = messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete {filename}?")
@@ -5393,7 +6060,14 @@ class SNESIconGenerator(ctk.CTk):
             messagebox.showerror("Error", f"Failed to delete background: {str(e)}")
     
     def _update_templates_after_background_deletion(self, deleted_bg_num):
-        """Update templates that reference deleted custom backgrounds"""
+        """Update templates that reference deleted custom backgrounds.
+        
+        Adjusts or resets background indices in templates to handle
+        the renumbering after deletion.
+        
+        Args:
+            deleted_bg_num: The number of the deleted background
+        """
         for i, template in enumerate(self.templates):
             # Check if template uses a custom background that was deleted
             if hasattr(template, 'current_bg_index') and template['current_bg_index'] >= len(self.bg_files):
@@ -5410,6 +6084,14 @@ class SNESIconGenerator(ctk.CTk):
         self._save_templates()
 
     def _create_default_templates(self):
+        """Create default template configurations.
+        
+        Returns a list of 6 template dictionaries with default settings
+        for different icon configurations.
+        
+        Returns:
+            List of template dictionaries
+        """
         base = {"line_hues": [0.0, 0.0, 0.0], "line_rainbows": [False, False, False], "line_outlines": [True, True, True], "line_font_size_offsets": [0, 0, 0], "line_font_spacing_offsets": [0, 0, 0], "line_text_offset_xs": [0, 0, 0], "line_text_offset_ys": [4, 4, 4], "line_active": [True, True, True], "bg_hue": 0.0, "bg_brightness": 1.0, "zoom_level": 50, "offset_x": 0, "offset_y": 0, "stretch_x": 1.0, "stretch_y": 1.0, "brightness": 0.9, "crt_enabled": True, "bg_scale": 1.0, "bg_offset_x": 0, "bg_offset_y": 0, "frame_offset_x": 0, "frame_offset_y": 0, "scanline_alpha": 20, "current_bg_index": 0, "current_frame_index": 0, "current_font_index": 0, "line_spacing_offset": -10, "font_position_step": 1, "decor_enabled": True, "current_decor_index": 0, "decor_scale": 1.0, "decor_offset_x": 0, "decor_offset_y": 0}
         templates = []
         for i in range(6):
