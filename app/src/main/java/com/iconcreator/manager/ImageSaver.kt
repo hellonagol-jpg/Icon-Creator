@@ -7,8 +7,11 @@ import android.os.Build
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -83,13 +86,53 @@ class ImageSaver(private val context: Context) {
     
     /**
      * Save as ICO (Windows icon format)
-     * Note: This is a simplified implementation. For full ICO support, you'd need a library.
+     * Properly encodes multiple sizes into a single .ico file
      */
     suspend fun saveAsICO(bitmap: Bitmap, filename: String? = null): String? = withContext(Dispatchers.IO) {
         try {
-            // ICO format is complex, so we'll save as PNG with .ico extension for now
-            // In a production app, you'd use a proper ICO library
             val displayName = filename ?: generateFilename()
+            
+            // Sizes to include in the ICO: 256, 128, 64, 48, 32, 16
+            val sizes = listOf(256, 128, 64, 48, 32, 16)
+            val pngs = sizes.map { size ->
+                val scaled = Bitmap.createScaledBitmap(bitmap, size, size, true)
+                val out = ByteArrayOutputStream()
+                scaled.compress(Bitmap.CompressFormat.PNG, 100, out)
+                out.toByteArray()
+            }
+            
+            val icoBuffer = ByteArrayOutputStream()
+            val header = ByteBuffer.allocate(6).order(ByteOrder.LITTLE_ENDIAN)
+            header.putShort(0) // Reserved
+            header.putShort(1) // Type (1 for icon)
+            header.putShort(sizes.size.toShort()) // Number of images
+            icoBuffer.write(header.array())
+            
+            var offset = 6 + (sizes.size * 16)
+            
+            for (i in pngs.indices) {
+                val size = sizes[i]
+                val data = pngs[i]
+                
+                val entry = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN)
+                entry.put(if (size >= 256) 0 else size.toByte()) // Width
+                entry.put(if (size >= 256) 0 else size.toByte()) // Height
+                entry.put(0) // Color count
+                entry.put(0) // Reserved
+                entry.putShort(1) // Color planes
+                entry.putShort(32) // Bits per pixel
+                entry.putInt(data.size) // Image size
+                entry.putInt(offset) // Image offset
+                icoBuffer.write(entry.array())
+                
+                offset += data.size
+            }
+            
+            for (data in pngs) {
+                icoBuffer.write(data)
+            }
+            
+            val icoData = icoBuffer.toByteArray()
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val contentValues = android.content.ContentValues().apply {
@@ -105,7 +148,7 @@ class ImageSaver(private val context: Context) {
                 
                 uri?.let {
                     context.contentResolver.openOutputStream(it)?.use { outputStream ->
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                        outputStream.write(icoData)
                     }
                     return@withContext it.toString()
                 }
@@ -114,13 +157,11 @@ class ImageSaver(private val context: Context) {
                     android.os.Environment.DIRECTORY_PICTURES
                 )
                 val appDir = File(picturesDir, "IconCreator")
-                if (!appDir.exists()) {
-                    appDir.mkdirs()
-                }
+                if (!appDir.exists()) appDir.mkdirs()
                 
                 val file = File(appDir, "$displayName.ico")
                 FileOutputStream(file).use { outputStream ->
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                    outputStream.write(icoData)
                 }
                 
                 context.sendBroadcast(

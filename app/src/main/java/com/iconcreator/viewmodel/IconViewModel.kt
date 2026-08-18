@@ -44,6 +44,9 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
     private val _fonts = MutableStateFlow<List<Typeface>>(emptyList())
     val fonts: StateFlow<List<Typeface>> = _fonts.asStateFlow()
     
+    private val _fontNames = MutableStateFlow<List<String>>(emptyList())
+    val fontNames: StateFlow<List<String>> = _fontNames.asStateFlow()
+    
     private val _decorations = MutableStateFlow<List<Bitmap>>(emptyList())
     val decorations: StateFlow<List<Bitmap>> = _decorations.asStateFlow()
     
@@ -69,6 +72,22 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
     private val _alphaMask = MutableStateFlow<Bitmap?>(null)
     private val _alpha2Mask = MutableStateFlow<Bitmap?>(null)
     private val _borderShadow = MutableStateFlow<Bitmap?>(null)
+    private val _scanlineOverlay = MutableStateFlow<Bitmap?>(null)
+    
+    private val _navL = MutableStateFlow<Bitmap?>(null)
+    val navL: StateFlow<Bitmap?> = _navL.asStateFlow()
+    
+    private val _navR = MutableStateFlow<Bitmap?>(null)
+    val navR: StateFlow<Bitmap?> = _navR.asStateFlow()
+    
+    private val _rainbowIcon = MutableStateFlow<Bitmap?>(null)
+    val rainbowIcon: StateFlow<Bitmap?> = _rainbowIcon.asStateFlow()
+    
+    private val _outlineIcon = MutableStateFlow<Bitmap?>(null)
+    val outlineIcon: StateFlow<Bitmap?> = _outlineIcon.asStateFlow()
+    
+    private val _glowIcon = MutableStateFlow<Bitmap?>(null)
+    val glowIcon: StateFlow<Bitmap?> = _glowIcon.asStateFlow()
     
     // Rendered preview
     private val _previewBitmap = MutableStateFlow<Bitmap?>(null)
@@ -87,11 +106,21 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _backgrounds.value = assetManager.loadBackgrounds()
             _borders.value = assetManager.loadBorders()
-            _fonts.value = assetManager.loadFonts()
+            
+            val fontFiles = assetManager.listAssetFiles("Fonts")
+            _fontNames.value = fontFiles
+            _fonts.value = fontFiles.mapNotNull { assetManager.loadFont("Fonts/$it") }
+            
             _decorations.value = assetManager.loadDecorations()
             _alphaMask.value = assetManager.loadAlphaMask()
             _alpha2Mask.value = assetManager.loadAlpha2Mask()
             _borderShadow.value = assetManager.loadBorderShadow()
+            _scanlineOverlay.value = assetManager.loadScanlines()
+            _navL.value = assetManager.loadNavL()
+            _navR.value = assetManager.loadNavR()
+            _rainbowIcon.value = assetManager.loadRainbowIcon()
+            _outlineIcon.value = assetManager.loadOutlineIcon()
+            _glowIcon.value = assetManager.loadGlowIcon()
             
             loadTemplates()
             
@@ -126,6 +155,17 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun setGameImage(bitmap: Bitmap?) {
         _gameImage.value = bitmap
+        if (bitmap != null) {
+            updateSetting {
+                zoomLevel = 50 // Default to "fit"
+                // Stretch to fill the 512x512 square exactly
+                val maxDim = Math.max(bitmap.width, bitmap.height).toFloat()
+                stretchX = maxDim / bitmap.width
+                stretchY = maxDim / bitmap.height
+                offsetX = 0
+                offsetY = 0
+            }
+        }
         renderPreview()
     }
     
@@ -176,7 +216,8 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
                 font = _font.value,
                 alphaMask = _alphaMask.value,
                 alpha2Mask = _alpha2Mask.value,
-                borderShadow = _borderShadow.value
+                borderShadow = _borderShadow.value,
+                scanlineOverlay = _scanlineOverlay.value
             )
             _previewBitmap.value = preview
         }

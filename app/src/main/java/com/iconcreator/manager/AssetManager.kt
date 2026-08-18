@@ -112,4 +112,17 @@ class AssetManager(private val context: Context) {
      * Load scanlines pattern
      */
     suspend fun loadScanlines(): Bitmap? = loadBitmap("Images/scanlines.png")
+    
+    /**
+     * Load navigation icons
+     */
+    suspend fun loadNavL(): Bitmap? = loadBitmap("Images/L.png")
+    suspend fun loadNavR(): Bitmap? = loadBitmap("Images/R.png")
+    
+    /**
+     * Load text option icons
+     */
+    suspend fun loadRainbowIcon(): Bitmap? = loadBitmap("Images/rainbow.png")
+    suspend fun loadOutlineIcon(): Bitmap? = loadBitmap("Images/outline.png")
+    suspend fun loadGlowIcon(): Bitmap? = loadBitmap("Images/glow.png")
 }

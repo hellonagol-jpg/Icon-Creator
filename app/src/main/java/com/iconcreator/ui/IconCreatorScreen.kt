@@ -1,8 +1,10 @@
 package com.iconcreator.ui
 
 import android.graphics.Bitmap
-import androidx.compose.foundation.background
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -22,6 +24,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -33,12 +37,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -46,6 +60,8 @@ import com.iconcreator.model.IconSettings
 import com.iconcreator.ui.theme.IconCreatorTheme
 import com.iconcreator.viewmodel.IconViewModel
 import com.iconcreator.viewmodel.IconUiState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun IconCreatorScreen(
@@ -163,72 +179,75 @@ fun PreviewBox(
 }
 
 @Composable
-fun LeftPanel(
-    viewModel: IconViewModel,
-    previewBitmap: Bitmap?,
-    modifier: Modifier = Modifier
-) {
-    // This function is now partially redundant but kept for compatibility if called elsewhere
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        PreviewBox(previewBitmap = previewBitmap)
-        Spacer(modifier = Modifier.height(16.dp))
-        ActionButtons(viewModel)
-    }
-}
-
-@Composable
 fun ActionButtons(viewModel: IconViewModel) {
     val imagePicker = rememberImagePicker(viewModel)
-    var showSaveDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-    var showTemplateDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var showSaveDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
+    var showTemplateDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
     
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Button(
-            onClick = imagePicker,
+        // 2x2 Grid for main actions
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3498DB))
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Upload Image")
+            Button(
+                onClick = imagePicker,
+                modifier = Modifier.weight(1f).height(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3498DB)),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+            ) {
+                Text("Upload", style = MaterialTheme.typography.bodySmall)
+            }
+            
+            Button(
+                onClick = { showSaveDialog = true },
+                modifier = Modifier.weight(1f).height(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ECC71)),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+            ) {
+                Text("Save", style = MaterialTheme.typography.bodySmall)
+            }
         }
         
-        Button(
-            onClick = { showSaveDialog = true },
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ECC71))
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Save")
+            Button(
+                onClick = { showTemplateDialog = true },
+                modifier = Modifier.weight(1f).height(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3498DB)),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+            ) {
+                Text("Templates", style = MaterialTheme.typography.bodySmall)
+            }
+            
+            Button(
+                onClick = { viewModel.resetToDefault() },
+                modifier = Modifier.weight(1f).height(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE74C3C)),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+            ) {
+                Text("Reset", style = MaterialTheme.typography.bodySmall)
+            }
         }
         
-        Button(
-            onClick = { showTemplateDialog = true },
+        // Randomize at the bottom, same size (half-width to match grid)
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3498DB))
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text("Templates")
-        }
-        
-        Button(
-            onClick = { viewModel.resetToDefault() },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE74C3C))
-        ) {
-            Text("Reset")
-        }
-        
-        Button(
-            onClick = { viewModel.randomizeSettings() },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4))
-        ) {
-            Text("Randomize")
+            Button(
+                onClick = { viewModel.randomizeSettings() },
+                modifier = Modifier.fillMaxWidth(0.5f).height(40.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF69B4)),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+            ) {
+                Text("Randomize", style = MaterialTheme.typography.bodySmall)
+            }
         }
     }
     
@@ -263,13 +282,24 @@ fun SaveDialog(
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Save Icon") },
-        text = { Text("Choose save format:") },
-        confirmButton = {
-            Button(onClick = onSavePNG) {
-                Text("Save as PNG")
+        text = { 
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Choose save format:")
+                Button(
+                    onClick = onSavePNG,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Save as PNG")
+                }
+                Button(
+                    onClick = onSaveICO,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Save as ICO (Windows Icon)")
+                }
             }
         },
-        dismissButton = {
+        confirmButton = {
             Button(onClick = onDismiss) {
                 Text("Cancel")
             }
@@ -344,7 +374,6 @@ fun TemplateDialog(
                         ) {
                             items(templates.size) { index ->
                                 val template = templates[index]
-                                val name = template.settings.titleLines.joinToString(" ") { it }.takeIf { it.isNotBlank() } ?: "Unnamed Template"
                                 
                                 Row(
                                     modifier = Modifier
@@ -421,6 +450,16 @@ fun RightPanel(
 ) {
     val scrollModifier = if (isScrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier
     
+    var expandedSections by remember { androidx.compose.runtime.mutableStateOf(setOf<String>()) }
+    
+    fun toggleSection(name: String) {
+        expandedSections = if (expandedSections.contains(name)) {
+            expandedSections - name
+        } else {
+            expandedSections + name
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxHeight()
@@ -429,50 +468,72 @@ fun RightPanel(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Image Settings
-        Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
-            SectionHeader("Image Settings", Color(0xFF3498DB))
-            ImageSettingsSection(viewModel, settings)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionHeader("Image Settings", Color(0xFF3498DB), expandedSections.contains("Image Settings")) { toggleSection("Image Settings") }
+            if (expandedSections.contains("Image Settings")) {
+                ImageSettingsSection(viewModel, settings)
+            }
         }
         
         // Background & Border
-        Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
-            SectionHeader("Background & Border", Color(0xFFE67E22))
-            BackgroundSection(viewModel, settings)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionHeader("Background & Border", Color(0xFFE67E22), expandedSections.contains("Background & Border")) { toggleSection("Background & Border") }
+            if (expandedSections.contains("Background & Border")) {
+                BackgroundSection(viewModel, settings)
+            }
         }
         
         // Text Settings
-        Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
-            SectionHeader("Text Settings", Color(0xFFE74C3C))
-            TextSettingsSection(viewModel, settings)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionHeader("Text Settings", Color(0xFFE74C3C), expandedSections.contains("Text Settings")) { toggleSection("Text Settings") }
+            if (expandedSections.contains("Text Settings")) {
+                TextSettingsSection(viewModel, settings)
+            }
         }
         
         // CRT Effects
-        Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
-            SectionHeader("CRT Effects", Color(0xFF16A085))
-            CRTSection(viewModel, settings)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionHeader("CRT Effects", Color(0xFF16A085), expandedSections.contains("CRT Effects")) { toggleSection("CRT Effects") }
+            if (expandedSections.contains("CRT Effects")) {
+                CRTSection(viewModel, settings)
+            }
         }
         
         // Decoration Settings
-        Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
-            SectionHeader("Decoration Settings", Color(0xFF27AE60))
-            DecorationSection(viewModel, settings)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionHeader("Decoration Settings", Color(0xFF27AE60), expandedSections.contains("Decoration Settings")) { toggleSection("Decoration Settings") }
+            if (expandedSections.contains("Decoration Settings")) {
+                DecorationSection(viewModel, settings)
+            }
         }
     }
 }
 
 @Composable
-fun SectionHeader(text: String, color: Color) {
+fun SectionHeader(text: String, color: Color, isExpanded: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(color, shape = MaterialTheme.shapes.medium)
+            .clickable { onClick() }
             .padding(12.dp)
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium,
-            color = Color.White
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White
+            )
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
     }
 }
 
@@ -487,6 +548,13 @@ fun ImageSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
             value = settings.brightness,
             valueRange = 0.1f..2.0f,
             onValueChange = { viewModel.updateSetting { brightness = it } }
+        )
+        
+        SliderWithLabel(
+            label = "Opacity",
+            value = settings.imageAlpha,
+            valueRange = 0.0f..1.0f,
+            onValueChange = { viewModel.updateSetting { imageAlpha = it } }
         )
         
         SliderWithLabel(
@@ -513,14 +581,14 @@ fun ImageSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
         SliderWithLabel(
             label = "Stretch X",
             value = settings.stretchX,
-            valueRange = 0.5f..2.0f,
+            valueRange = 0.1f..5.0f,
             onValueChange = { viewModel.updateSetting { stretchX = it } }
         )
         
         SliderWithLabel(
             label = "Stretch Y",
             value = settings.stretchY,
-            valueRange = 0.5f..2.0f,
+            valueRange = 0.1f..5.0f,
             onValueChange = { viewModel.updateSetting { stretchY = it } }
         )
     }
@@ -537,6 +605,8 @@ fun BackgroundSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "Background",
             currentIndex = settings.currentBgIndex,
             totalCount = viewModel.backgrounds.collectAsState().value.size,
+            navL = viewModel.navL.collectAsState().value,
+            navR = viewModel.navR.collectAsState().value,
             onNext = { viewModel.nextBackground() },
             onPrev = { viewModel.prevBackground() }
         )
@@ -581,6 +651,8 @@ fun BackgroundSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "Border",
             currentIndex = settings.currentFrameIndex,
             totalCount = viewModel.borders.collectAsState().value.size,
+            navL = viewModel.navL.collectAsState().value,
+            navR = viewModel.navR.collectAsState().value,
             onNext = { viewModel.nextBorder() },
             onPrev = { viewModel.prevBorder() }
         )
@@ -599,30 +671,6 @@ fun BackgroundSection(viewModel: IconViewModel, settings: IconSettings) {
             onValueChange = { viewModel.updateSetting { borderAlpha = it } }
         )
         
-        // RGB entry for border color
-        val borderRgba = settings.borderDirectRgb ?: intArrayOf(255, 255, 255, 255)
-        RGBEntryRow(
-            label = "Border ARGB",
-            rgba = borderRgba,
-            onValueChange = { 
-                viewModel.updateSetting { borderDirectRgb = it }
-            }
-        )
-        
-        SliderWithLabel(
-            label = "Frame Offset X",
-            value = settings.frameOffsetX.toFloat(),
-            valueRange = -50f..50f,
-            onValueChange = { viewModel.updateSetting { frameOffsetX = it.toInt() } }
-        )
-        
-        SliderWithLabel(
-            label = "Frame Offset Y",
-            value = settings.frameOffsetY.toFloat(),
-            valueRange = -50f..50f,
-            onValueChange = { viewModel.updateSetting { frameOffsetY = it.toInt() } }
-        )
-        
         SliderWithLabel(
             label = "Shadow Opacity",
             value = settings.shadowOpacity.toFloat(),
@@ -634,57 +682,55 @@ fun BackgroundSection(viewModel: IconViewModel, settings: IconSettings) {
 
 @Composable
 fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
+    var showFontSelector by remember { androidx.compose.runtime.mutableStateOf(false) }
+    
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Font navigation
-        NavigationRow(
-            label = "Font",
-            currentIndex = settings.currentFontIndex,
-            totalCount = viewModel.fonts.collectAsState().value.size,
-            onNext = { viewModel.nextFont() },
-            onPrev = { viewModel.prevFont() }
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                NavigationRow(
+                    label = "Font",
+                    currentIndex = settings.currentFontIndex,
+                    totalCount = viewModel.fonts.collectAsState().value.size,
+                    navL = viewModel.navL.collectAsState().value,
+                    navR = viewModel.navR.collectAsState().value,
+                    onNext = { viewModel.nextFont() },
+                    onPrev = { viewModel.prevFont() }
+                )
+            }
+            
+            Button(
+                onClick = { showFontSelector = true },
+                modifier = Modifier.height(48.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp)
+            ) {
+                Text("List", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        
+        if (showFontSelector) {
+            FontSelectorDialog(
+                viewModel = viewModel,
+                currentIndex = settings.currentFontIndex,
+                onSelect = { index ->
+                    viewModel.updateSetting { currentFontIndex = index }
+                    viewModel.setFont(viewModel.fonts.value.getOrNull(index))
+                    showFontSelector = false
+                },
+                onDismiss = { showFontSelector = false }
+            )
+        }
         
         // Text line inputs
         for (i in 0..2) {
-            val lineText = settings.titleLines.getOrElse(i) { "" }
-            val isActive = settings.lineActive.getOrElse(i) { true }
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                androidx.compose.material3.Checkbox(
-                    checked = isActive,
-                    onCheckedChange = { 
-                        viewModel.updateSetting {
-                            lineActive = lineActive.toMutableList().apply { set(i, it) }
-                        }
-                    },
-                    colors = androidx.compose.material3.CheckboxDefaults.colors(
-                        checkedColor = Color(0xFF00FF00),
-                        uncheckedColor = Color(0xFF555555)
-                    )
-                )
-                
-                androidx.compose.material3.OutlinedTextField(
-                    value = lineText,
-                    onValueChange = { 
-                        viewModel.updateSetting {
-                            titleLines = titleLines.toMutableList().apply { 
-                                if (size <= i) add(it) else set(i, it)
-                            }
-                        }
-                    },
-                    label = { Text("Line ${i + 1}") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
-                )
-            }
+            TextLineItem(index = i, settings = settings, viewModel = viewModel)
         }
         
         SliderWithLabel(
@@ -696,29 +742,7 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
                     lineHues = lineHues.mapIndexed { index, oldHue -> 
                         if (lineActive.getOrElse(index) { false }) hue else oldHue 
                     }
-                    // Remove direct RGB overrides for active lines when using hue
-                    lineActive.forEachIndexed { index, active ->
-                        if (active) directRgb.remove(index)
-                    }
                 } 
-            }
-        )
-        
-        // RGB entry for text color
-        val firstActiveIdx = settings.lineActive.indexOf(true).coerceAtLeast(0)
-        val textRgba = settings.directRgb[firstActiveIdx] ?: intArrayOf(255, 255, 255, 255)
-        RGBEntryRow(
-            label = "Text RGB",
-            rgba = textRgba,
-            showAlpha = false,
-            onValueChange = { newRgb ->
-                viewModel.updateSetting {
-                    lineActive.forEachIndexed { index, active ->
-                        if (active) {
-                            directRgb[index] = newRgb
-                        }
-                    }
-                }
             }
         )
         
@@ -734,21 +758,25 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "Font Size: ${currentFontSize}px",
             value = settings.lineFontSpacingOffsets.getOrElse(0) { 0 }.toFloat(),
             valueRange = -20f..200f,
-            onValueChange = { 
+            onValueChange = { offset ->
                 viewModel.updateSetting {
-                    lineFontSpacingOffsets = lineFontSpacingOffsets.toMutableList().apply { set(0, it.toInt()) }
+                    lineFontSpacingOffsets = lineFontSpacingOffsets.toMutableList().apply { 
+                        indices.forEach { if (lineActive.getOrElse(it) { false }) set(it, offset.toInt()) }
+                    }
                 }
             }
         )
         
         // Letter spacing
         SliderWithLabel(
-            label = "Letter Spacing: ${settings.lineFontSpacingOffsets.getOrElse(0) { -1 }}px",
-            value = settings.lineFontSpacingOffsets.getOrElse(0) { -1 }.toFloat(),
-            valueRange = -10f..20f,
-            onValueChange = { 
+            label = "Letter Spacing: ${settings.lineLetterSpacings.getOrElse(0) { 0f }}px",
+            value = settings.lineLetterSpacings.getOrElse(0) { 0f },
+            valueRange = -10f..40f,
+            onValueChange = { spacing ->
                 viewModel.updateSetting {
-                    lineFontSpacingOffsets = lineFontSpacingOffsets.toMutableList().apply { set(0, it.toInt()) }
+                    lineLetterSpacings = lineLetterSpacings.toMutableList().apply { 
+                        indices.forEach { if (lineActive.getOrElse(it) { false }) set(it, spacing) }
+                    }
                 }
             }
         )
@@ -766,9 +794,11 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "Text Offset X",
             value = settings.lineTextOffsetXs.getOrElse(0) { 0 }.toFloat(),
             valueRange = -100f..100f,
-            onValueChange = { 
+            onValueChange = { offset ->
                 viewModel.updateSetting {
-                    lineTextOffsetXs = lineTextOffsetXs.toMutableList().apply { set(0, it.toInt()) }
+                    lineTextOffsetXs = lineTextOffsetXs.toMutableList().apply { 
+                        indices.forEach { if (lineActive.getOrElse(it) { false }) set(it, offset.toInt()) }
+                    }
                 }
             }
         )
@@ -778,47 +808,20 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "Text Offset Y",
             value = settings.lineTextOffsetYs.getOrElse(0) { 4 }.toFloat(),
             valueRange = -50f..50f,
-            onValueChange = { 
+            onValueChange = { offset ->
                 viewModel.updateSetting {
-                    lineTextOffsetYs = lineTextOffsetYs.toMutableList().apply { set(0, it.toInt()) }
+                    lineTextOffsetYs = lineTextOffsetYs.toMutableList().apply { 
+                        indices.forEach { if (lineActive.getOrElse(it) { false }) set(it, offset.toInt()) }
+                    }
                 }
             }
         )
         
-        // Checkboxes
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            CheckboxWithLabel(
-                label = "Rainbow",
-                checked = settings.lineRainbows.getOrElse(0) { false },
-                onCheckedChange = { 
-                    viewModel.updateSetting {
-                        lineRainbows = lineRainbows.toMutableList().apply { set(0, it) }
-                    }
-                }
-            )
+        // Glow parameters (Visible only if at least one line has glow enabled)
+        if (settings.lineGlows.any { it }) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Glow Parameters", style = MaterialTheme.typography.labelLarge, color = Color.White)
             
-            CheckboxWithLabel(
-                label = "Outline",
-                checked = settings.lineOutlines.getOrElse(0) { true },
-                onCheckedChange = { 
-                    viewModel.updateSetting {
-                        lineOutlines = lineOutlines.toMutableList().apply { set(0, it) }
-                    }
-                }
-            )
-        }
-        
-        // Glow controls
-        CheckboxWithLabel(
-            label = "Glow Text",
-            checked = settings.glowEnabled,
-            onCheckedChange = { viewModel.updateSetting { glowEnabled = it } }
-        )
-        
-        if (settings.glowEnabled) {
             SliderWithLabel(
                 label = "Glow Strength",
                 value = settings.glowStrength,
@@ -827,27 +830,181 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
             )
             
             SliderWithLabel(
-                label = "Glow Color Hue",
-                value = settings.glowColorHue,
-                valueRange = 0f..360f,
-                onValueChange = { viewModel.updateSetting { glowColorHue = it } }
-            )
-            
-            // RGB entry for glow color
-            val glowRgba = settings.glowDirectRgb ?: intArrayOf(255, 255, 255, 255)
-            RGBEntryRow(
-                label = "Glow ARGB",
-                rgba = glowRgba,
-                onValueChange = { 
-                    viewModel.updateSetting { glowDirectRgb = it }
-                }
-            )
-            
-            SliderWithLabel(
                 label = "Glow Size",
                 value = settings.glowSize.toFloat(),
                 valueRange = 1f..10f,
                 onValueChange = { viewModel.updateSetting { glowSize = it.toInt() } }
+            )
+        }
+    }
+}
+
+@Composable
+fun TextLineItem(
+    index: Int,
+    settings: IconSettings,
+    viewModel: IconViewModel
+) {
+    val lineText = settings.titleLines.getOrElse(index) { "" }
+    val isActive = settings.lineActive.getOrElse(index) { true }
+    val isRainbow = settings.lineRainbows.getOrElse(index) { false }
+    val isOutline = settings.lineOutlines.getOrElse(index) { true }
+    val isGlow = settings.lineGlows.getOrElse(index) { false }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            androidx.compose.material3.Checkbox(
+                checked = isActive,
+                onCheckedChange = { 
+                    viewModel.updateSetting {
+                        lineActive = lineActive.toMutableList().apply { 
+                            while (size <= index) add(true)
+                            set(index, it) 
+                        }
+                    }
+                },
+                colors = androidx.compose.material3.CheckboxDefaults.colors(
+                    checkedColor = Color(0xFF00FF00),
+                    uncheckedColor = Color(0xFF555555)
+                )
+            )
+            
+            androidx.compose.material3.OutlinedTextField(
+                value = lineText,
+                onValueChange = { 
+                    viewModel.updateSetting {
+                        titleLines = titleLines.toMutableList().apply { 
+                            while (size <= index) add("")
+                            set(index, it)
+                        }
+                    }
+                },
+                label = { Text("Line ${index + 1}") },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
+            )
+        }
+        
+        if (isActive) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 32.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconToggle(
+                    icon = viewModel.rainbowIcon.collectAsState().value,
+                    label = "Rainbow",
+                    checked = isRainbow,
+                    onCheckedChange = { 
+                        viewModel.updateSetting {
+                            lineRainbows = lineRainbows.toMutableList().apply { 
+                                while (size <= index) add(false)
+                                set(index, it) 
+                            }
+                        }
+                    }
+                )
+                
+                IconToggle(
+                    icon = viewModel.outlineIcon.collectAsState().value,
+                    label = "Outline",
+                    checked = isOutline,
+                    onCheckedChange = { 
+                        viewModel.updateSetting {
+                            lineOutlines = lineOutlines.toMutableList().apply { 
+                                while (size <= index) add(true)
+                                set(index, it) 
+                            }
+                        }
+                    }
+                )
+                
+                IconToggle(
+                    icon = viewModel.glowIcon.collectAsState().value,
+                    label = "Glow",
+                    checked = isGlow,
+                    onCheckedChange = { 
+                        viewModel.updateSetting {
+                            lineGlows = lineGlows.toMutableList().apply { 
+                                while (size <= index) add(false)
+                                set(index, it) 
+                            }
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun IconToggle(
+    icon: Bitmap?,
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val isGlow = label == "Glow"
+    val isRainbow = label == "Rainbow"
+    
+    androidx.compose.material3.Surface(
+        onClick = { onCheckedChange(!checked) },
+        shape = MaterialTheme.shapes.small,
+        color = if (checked) {
+            if (isGlow) Color(0xFFF1C40F).copy(alpha = 0.4f) else Color(0xFF3498DB).copy(alpha = 0.3f)
+        } else Color.Transparent,
+        border = if (checked) {
+            androidx.compose.foundation.BorderStroke(1.dp, if (isGlow) Color(0xFFF1C40F) else Color(0xFF3498DB))
+        } else null,
+        modifier = Modifier.size(width = 80.dp, height = 40.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (icon != null) {
+                if (isRainbow && checked) {
+                    val rainbowBrush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.Red, Color(0xFFFFA500), Color.Yellow, 
+                            Color.Green, Color.Blue, Color(0xFF4B0082), Color(0xFFEE82EE)
+                        )
+                    )
+                    Image(
+                        bitmap = icon.asImageBitmap(),
+                        contentDescription = label,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .graphicsLayer(alpha = 0.99f)
+                            .drawWithCache {
+                                onDrawWithContent {
+                                    drawContent()
+                                    drawRect(rainbowBrush, blendMode = BlendMode.SrcAtop)
+                                }
+                            }
+                    )
+                } else {
+                    Image(
+                        bitmap = icon.asImageBitmap(),
+                        contentDescription = label,
+                        modifier = Modifier.size(24.dp),
+                        colorFilter = if (isGlow && checked) {
+                            ColorFilter.lighting(Color(0xFFFFFFFF), Color(0xFFF1C40F))
+                        } else null
+                    )
+                }
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = if (checked) Color.White else Color.Gray,
+                maxLines = 1
             )
         }
     }
@@ -893,6 +1050,8 @@ fun DecorationSection(viewModel: IconViewModel, settings: IconSettings) {
                 label = "Decor",
                 currentIndex = settings.currentDecorIndex,
                 totalCount = viewModel.decorations.collectAsState().value.size,
+                navL = viewModel.navL.collectAsState().value,
+                navR = viewModel.navR.collectAsState().value,
                 onNext = { viewModel.nextDecor() },
                 onPrev = { viewModel.prevDecor() }
             )
@@ -945,72 +1104,6 @@ fun CheckboxWithLabel(
 }
 
 @Composable
-fun RGBEntryRow(
-    label: String,
-    rgba: IntArray,
-    showAlpha: Boolean = true,
-    onValueChange: (IntArray) -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.White
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val a = if (rgba.size >= 4) rgba[0] else 255
-            val r = if (rgba.size >= 4) rgba[1] else rgba.getOrElse(0) { 255 }
-            val g = if (rgba.size >= 4) rgba[2] else rgba.getOrElse(1) { 255 }
-            val b = if (rgba.size >= 4) rgba[3] else rgba.getOrElse(2) { 255 }
-
-            if (showAlpha) {
-                RGBEntryField(value = a, onValueChange = { onValueChange(intArrayOf(it, r, g, b)) }, label = "A", modifier = Modifier.weight(1f))
-            }
-            RGBEntryField(value = r, onValueChange = { 
-                if (showAlpha) onValueChange(intArrayOf(a, it, g, b)) 
-                else onValueChange(intArrayOf(it, g, b)) 
-            }, label = "R", modifier = Modifier.weight(1f))
-            
-            RGBEntryField(value = g, onValueChange = { 
-                if (showAlpha) onValueChange(intArrayOf(a, r, it, b)) 
-                else onValueChange(intArrayOf(r, it, b)) 
-            }, label = "G", modifier = Modifier.weight(1f))
-            
-            RGBEntryField(value = b, onValueChange = { 
-                if (showAlpha) onValueChange(intArrayOf(a, r, g, it)) 
-                else onValueChange(intArrayOf(r, g, it)) 
-            }, label = "B", modifier = Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-fun RGBEntryField(
-    value: Int,
-    onValueChange: (Int) -> Unit,
-    label: String,
-    modifier: Modifier = Modifier
-) {
-    var text by androidx.compose.runtime.remember(value) { androidx.compose.runtime.mutableStateOf(value.toString()) }
-    
-    androidx.compose.material3.OutlinedTextField(
-        value = text,
-        onValueChange = { newText ->
-            text = newText
-            newText.toIntOrNull()?.let { if (it in 0..255) onValueChange(it) }
-        },
-        label = { Text(label) },
-        modifier = modifier,
-        singleLine = true,
-        textStyle = androidx.compose.material3.MaterialTheme.typography.bodySmall
-    )
-}
-
-@Composable
 fun SliderWithLabel(
     label: String,
     value: Float,
@@ -1033,10 +1126,113 @@ fun SliderWithLabel(
 }
 
 @Composable
+fun FontSelectorDialog(
+    viewModel: IconViewModel,
+    currentIndex: Int,
+    onSelect: (Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val fonts by viewModel.fonts.collectAsState()
+    val fontNames by viewModel.fontNames.collectAsState()
+    
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Select Font") },
+        text = {
+            androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+                columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
+                modifier = Modifier.fillMaxWidth().height(400.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(fonts.size) { index ->
+                    val isSelected = index == currentIndex
+                    androidx.compose.material3.Surface(
+                        onClick = { onSelect(index) },
+                        shape = MaterialTheme.shapes.small,
+                        color = if (isSelected) Color(0xFF3498DB).copy(alpha = 0.3f) else Color(0xFF2D2D2D),
+                        border = if (isSelected) androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF3498DB)) else null
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Abc",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily(fonts[index])
+                                ),
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = fontNames.getOrElse(index) { "Font $index" }.substringAfterLast("/").substringBeforeLast("."),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.Gray,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+@Composable
+fun RepeatingIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit
+) {
+    val currentOnClick by rememberUpdatedState(onClick)
+    val scope = rememberCoroutineScope()
+    
+    Box(
+        modifier = modifier
+            .size(48.dp)
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                detectTapGestures(
+                    onPress = {
+                        val job = scope.launch {
+                            delay(400) // Initial delay before repeating
+                            while (true) {
+                                currentOnClick()
+                                delay(80) // Repeat delay
+                            }
+                        }
+                        try {
+                            currentOnClick() // First click on press
+                            awaitRelease()
+                        } finally {
+                            job.cancel()
+                        }
+                    }
+                )
+            }
+            .background(Color.Transparent, MaterialTheme.shapes.small)
+            .padding(4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        content()
+    }
+}
+
+@Composable
 fun NavigationRow(
     label: String,
     currentIndex: Int,
     totalCount: Int,
+    navL: Bitmap?,
+    navR: Bitmap?,
     onNext: () -> Unit,
     onPrev: () -> Unit
 ) {
@@ -1045,15 +1241,23 @@ fun NavigationRow(
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
+        RepeatingIconButton(
             onClick = onPrev,
             modifier = Modifier.size(48.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Previous",
-                tint = Color(0xFF3498DB)
-            )
+            if (navL != null) {
+                Image(
+                    bitmap = navL.asImageBitmap(),
+                    contentDescription = "Previous",
+                    modifier = Modifier.size(32.dp)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Previous",
+                    tint = Color(0xFF3498DB)
+                )
+            }
         }
         
         Text(
@@ -1062,15 +1266,23 @@ fun NavigationRow(
             color = Color.White
         )
         
-        IconButton(
+        RepeatingIconButton(
             onClick = onNext,
             modifier = Modifier.size(48.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.ArrowForward,
-                contentDescription = "Next",
-                tint = Color(0xFF3498DB)
-            )
+            if (navR != null) {
+                Image(
+                    bitmap = navR.asImageBitmap(),
+                    contentDescription = "Next",
+                    modifier = Modifier.size(32.dp)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "Next",
+                    tint = Color(0xFF3498DB)
+                )
+            }
         }
     }
 }

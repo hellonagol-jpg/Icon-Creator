@@ -20,9 +20,9 @@ import com.iconcreator.model.IconSettings
 class IconRenderer {
     
     companion object {
-        const val WIDTH = 512
-        const val HEIGHT = 512
-        const val RENDER_SIZE = 512
+        const val WIDTH = 1024
+        const val HEIGHT = 1024
+        const val RENDER_SIZE = 1024
         const val PREVIEW_SIZE = 512
     }
     
@@ -38,7 +38,8 @@ class IconRenderer {
         font: Typeface?,
         alphaMask: Bitmap? = null,
         alpha2Mask: Bitmap? = null,
-        borderShadow: Bitmap? = null
+        borderShadow: Bitmap? = null,
+        scanlineOverlay: Bitmap? = null
     ): Bitmap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
         val baseBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
         kotlinx.coroutines.yield()
@@ -63,19 +64,32 @@ class IconRenderer {
         // Draw game image
         gameImage?.let { game ->
             kotlinx.coroutines.yield()
-            val scale = (0.2f + ((settings.zoomLevel + 100) / 200f) * 1.8f) * 2f // Doubled scale for 512
+            // Base scale to fit the image inside RENDER_SIZE
+            val baseScale = RENDER_SIZE.toFloat() / Math.max(game.width, game.height)
+            // Zoom multiplier (centered at 50 for 1x fit)
+            val zoomFactor = if (settings.zoomLevel >= 50) {
+                1f + (settings.zoomLevel - 50) / 50f // 50->1x, 100->2x, 200->4x
+            } else {
+                (settings.zoomLevel + 100) / 150f // 50->1x, 0->0.66x, -100->0x
+            }
+            val scale = baseScale * zoomFactor
+            
             val scaledGame = scaleBitmap(game, scale * settings.stretchX, scale * settings.stretchY)
             val brightnessAdjustedGame = applyBrightness(scaledGame, settings.brightness)
             
+            val gamePaint = Paint().apply {
+                alpha = (settings.imageAlpha * 255).toInt().coerceIn(0, 255)
+            }
+            
             val pasteX = (RENDER_SIZE - brightnessAdjustedGame.width) / 2 + settings.offsetX * 2
             val pasteY = (RENDER_SIZE - brightnessAdjustedGame.height) / 2 + settings.offsetY * 2
-            canvas.drawBitmap(brightnessAdjustedGame, pasteX.toFloat(), pasteY.toFloat(), null)
+            canvas.drawBitmap(brightnessAdjustedGame, pasteX.toFloat(), pasteY.toFloat(), gamePaint)
         }
         
         kotlinx.coroutines.yield()
         // Draw CRT scanlines
-        if (settings.crtEnabled) {
-            drawScanlines(canvas, settings.scanlineAlpha)
+        if (settings.crtEnabled && scanlineOverlay != null) {
+            drawScanlines(canvas, scanlineOverlay, settings.scanlineAlpha)
         }
         
         // Draw text
@@ -105,11 +119,7 @@ class IconRenderer {
         // Draw frame (Border) on top of shadow
         frameImage?.let { frame ->
             kotlinx.coroutines.yield()
-            var tintedFrame = if (settings.borderDirectRgb != null) {
-                applyColorTint(frame, settings.borderDirectRgb!!)
-            } else {
-                applyHueShift(frame, settings.borderHue)
-            }
+            var tintedFrame = applyHueShift(frame, settings.borderHue)
             
             // Recreate Python's frame.putalpha(alpha2) using luminance
             alpha2Mask?.let { mask ->
@@ -214,24 +224,6 @@ class IconRenderer {
         return result
     }
     
-    private fun applyColorTint(bitmap: Bitmap, rgba: IntArray): Bitmap {
-        val result = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-        val paint = Paint()
-        val color = if (rgba.size >= 4) {
-            Color.argb(rgba[0], rgba[1], rgba[2], rgba[3])
-        } else {
-            Color.rgb(rgba[0], rgba[1], rgba[2])
-        }
-        paint.colorFilter = android.graphics.PorterDuffColorFilter(
-            color,
-            PorterDuff.Mode.SRC_IN
-        )
-        
-        val canvas = Canvas(result)
-        canvas.drawBitmap(bitmap, 0f, 0f, paint)
-        return result
-    }
-    
     private fun applyBrightness(bitmap: Bitmap, brightness: Float): Bitmap {
         if (brightness == 1.0f) return bitmap
         
@@ -248,19 +240,17 @@ class IconRenderer {
         return result
     }
     
-    private fun drawScanlines(canvas: Canvas, alpha: Int) {
-        val paint = Paint()
-        paint.color = Color.argb(alpha, 0, 0, 0)
-        paint.style = Paint.Style.FILL
-        
-        for (y in 0 until RENDER_SIZE step 2) {
-            canvas.drawRect(0f, y.toFloat(), RENDER_SIZE.toFloat(), (y + 1).toFloat(), paint)
+    private fun drawScanlines(canvas: Canvas, overlay: Bitmap, alpha: Int) {
+        val paint = Paint().apply {
+            this.alpha = (alpha * 2.55f).toInt().coerceIn(0, 255)
         }
+        val scaledOverlay = Bitmap.createScaledBitmap(overlay, RENDER_SIZE, RENDER_SIZE, true)
+        canvas.drawBitmap(scaledOverlay, 0f, 0f, paint)
     }
     
     private fun drawText(canvas: Canvas, settings: IconSettings, font: Typeface?) {
-        val activeLines = settings.titleLines.zip(settings.lineActive).filter { it.second }
-        val baseSize = when (activeLines.size) {
+        val activeLinesIndices = settings.lineActive.indices.filter { settings.lineActive[it] }
+        val baseSize = when (activeLinesIndices.size) {
             1 -> 88 // Doubled for 512
             2 -> 76
             else -> 64
@@ -269,43 +259,93 @@ class IconRenderer {
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG)
         font?.let { paint.typeface = it }
         
-        // Center vertically based on number of lines
-        // Python used specific Y values: 456 if 1, 416 if 2, 386 if 3 (mapped to 512)
-        // Let's use the logic that works with the offsets
         val totalSpacing = settings.lineSpacingOffset * 2
-        var yOffset = (RENDER_SIZE * 0.85f).toInt() - ((activeLines.size - 1) * (baseSize + totalSpacing))
+        var yOffset = (RENDER_SIZE * 0.85f).toInt() - ((activeLinesIndices.size - 1) * (baseSize + totalSpacing))
         
-        for ((line, isActive) in activeLines) {
-            if (!isActive) continue
+        for (lineIndex in activeLinesIndices) {
+            val line = settings.titleLines.getOrElse(lineIndex) { "" }
+            var fontSize = (baseSize + settings.lineFontSpacingOffsets.getOrElse(lineIndex) { 0 } * 2).coerceIn(10, 1000).toFloat()
+            paint.textSize = fontSize
             
-            val lineIndex = settings.titleLines.indexOf(line)
-            val fontSize = (baseSize + settings.lineFontSpacingOffsets.getOrElse(lineIndex) { 0 } * 2).coerceIn(40, 1000)
-            paint.textSize = fontSize.toFloat()
+            // Apply letter spacing
+            val letterSpacing = settings.lineLetterSpacings.getOrElse(lineIndex) { 0f }
+            paint.letterSpacing = letterSpacing / fontSize
             
-            // Get text color
-            val color = if (settings.directRgb.containsKey(lineIndex)) {
-                val rgba = settings.directRgb[lineIndex]!!
-                if (rgba.size >= 4) {
-                    Color.argb(rgba[0], rgba[1], rgba[2], rgba[3])
-                } else {
-                    Color.rgb(rgba[0], rgba[1], rgba[2])
-                }
-            } else {
-                getSolidColor(settings.lineHues.getOrElse(lineIndex) { 0f })
+            // Auto-resize if text is too wide
+            val maxWidth = RENDER_SIZE * 0.9f
+            var textWidth = paint.measureText(line)
+            if (textWidth > maxWidth) {
+                val scale = maxWidth / textWidth
+                fontSize *= scale
+                paint.textSize = fontSize
+                textWidth = paint.measureText(line)
             }
             
+            // Get text color
+            val color = getSolidColor(settings.lineHues.getOrElse(lineIndex) { 0f })
             paint.color = color
             
-            val textWidth = paint.measureText(line)
             val textX = (RENDER_SIZE - textWidth) / 2 + settings.lineTextOffsetXs.getOrElse(lineIndex) { 0 } * 2
             val textY = yOffset.toFloat() + settings.lineTextOffsetYs.getOrElse(lineIndex) { 4 } * 2
             
+            // Apply Rainbow effect if enabled
+            if (settings.lineRainbows.getOrElse(lineIndex) { false }) {
+                val rainbowShader = android.graphics.LinearGradient(
+                    textX, textY - fontSize/2, textX + textWidth, textY - fontSize/2,
+                    intArrayOf(
+                        Color.RED, 
+                        Color.rgb(255, 165, 0), // Orange
+                        Color.YELLOW, 
+                        Color.GREEN, 
+                        Color.BLUE, 
+                        Color.rgb(75, 0, 130), // Indigo
+                        Color.rgb(238, 130, 238) // Violet
+                    ),
+                    null,
+                    android.graphics.Shader.TileMode.CLAMP
+                )
+                paint.shader = rainbowShader
+            } else {
+                paint.shader = null
+            }
+            
+            // Draw glow (now before outline and text)
+            if (settings.lineGlows.getOrElse(lineIndex) { false }) {
+                val glowPaint = Paint(paint)
+                glowPaint.style = Paint.Style.STROKE
+                // Reduced size and strength for a less intense glow
+                glowPaint.strokeWidth = settings.glowSize.toFloat() * 1.2f
+                glowPaint.maskFilter = android.graphics.BlurMaskFilter(settings.glowSize * settings.glowStrength * 1.0f, android.graphics.BlurMaskFilter.Blur.NORMAL)
+                
+                // Match text color/effect for glow
+                if (settings.lineRainbows.getOrElse(lineIndex) { false }) {
+                    val rainbowShader = android.graphics.LinearGradient(
+                        textX, textY - fontSize/2, textX + textWidth, textY - fontSize/2,
+                        intArrayOf(
+                            Color.RED, Color.rgb(255, 165, 0), Color.YELLOW, 
+                            Color.GREEN, Color.BLUE, Color.rgb(75, 0, 130), Color.rgb(238, 130, 238)
+                        ),
+                        null,
+                        android.graphics.Shader.TileMode.CLAMP
+                    )
+                    glowPaint.shader = rainbowShader
+                } else {
+                    glowPaint.color = color 
+                    glowPaint.shader = null
+                }
+                
+                canvas.drawText(line, textX, textY, glowPaint)
+            }
+            
             // Draw outline
             if (settings.lineOutlines.getOrElse(lineIndex) { true }) {
+                val originalShader = paint.shader
+                paint.shader = null // Outline should be solid black
                 paint.style = Paint.Style.STROKE
-                paint.strokeWidth = 6f
+                paint.strokeWidth = fontSize * 0.08f // Relative stroke width
                 paint.color = Color.BLACK
                 canvas.drawText(line, textX, textY, paint)
+                paint.shader = originalShader
             }
             
             // Draw main text
@@ -313,17 +353,7 @@ class IconRenderer {
             paint.color = color
             canvas.drawText(line, textX, textY, paint)
             
-            // Draw glow
-            if (settings.glowEnabled) {
-                val glowPaint = Paint(paint)
-                glowPaint.style = Paint.Style.STROKE
-                glowPaint.strokeWidth = settings.glowSize.toFloat() * 2f
-                glowPaint.maskFilter = android.graphics.BlurMaskFilter(settings.glowSize * settings.glowStrength * 2f, android.graphics.BlurMaskFilter.Blur.OUTER)
-                glowPaint.color = getGlowColor(settings)
-                canvas.drawText(line, textX, textY, glowPaint)
-            }
-            
-            yOffset += (fontSize + totalSpacing)
+            yOffset += (fontSize + totalSpacing).toInt()
         }
     }
     
@@ -355,19 +385,6 @@ class IconRenderer {
                 val gray = (200 * (1 - tt)).toInt()
                 Color.rgb(gray, gray, gray)
             }
-        }
-    }
-    
-    private fun getGlowColor(settings: IconSettings): Int {
-        val glowDirectRgba = settings.glowDirectRgb
-        return if (glowDirectRgba != null) {
-            if (glowDirectRgba.size >= 4) {
-                Color.argb(glowDirectRgba[0], glowDirectRgba[1], glowDirectRgba[2], glowDirectRgba[3])
-            } else {
-                Color.rgb(glowDirectRgba[0], glowDirectRgba[1], glowDirectRgba[2])
-            }
-        } else {
-            getSolidColor(settings.glowColorHue)
         }
     }
 }

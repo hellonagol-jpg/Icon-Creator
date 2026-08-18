@@ -13,6 +13,7 @@ data class IconSettings(
     var stretchX: Float = 1.0f,
     var stretchY: Float = 1.0f,
     var brightness: Float = 0.9f,
+    var imageAlpha: Float = 1.0f,
     
     // Background settings
     var bgHue: Float = 0f,
@@ -24,7 +25,6 @@ data class IconSettings(
     
     // Border/Frame settings
     var borderHue: Float = 0f,
-    var borderDirectRgb: IntArray? = null, // RGB values when not using hue
     var borderAlpha: Float = 1.0f,
     var frameOffsetX: Int = 0,
     var frameOffsetY: Int = 0,
@@ -35,8 +35,10 @@ data class IconSettings(
     var lineHues: List<Float> = listOf(0f, 0f, 0f),
     var lineRainbows: List<Boolean> = listOf(false, false, false),
     var lineOutlines: List<Boolean> = listOf(true, true, true),
+    var lineGlows: List<Boolean> = listOf(false, false, false),
     var lineActive: List<Boolean> = listOf(true, true, false),
-    var lineFontSpacingOffsets: List<Int> = listOf(-1, -1, -1),
+    var lineFontSpacingOffsets: List<Int> = listOf(0, 0, 0),
+    var lineLetterSpacings: List<Float> = listOf(0f, 0f, 0f),
     var lineTextOffsetXs: List<Int> = listOf(0, 0, 0),
     var lineTextOffsetYs: List<Int> = listOf(4, 4, 4),
     var lineSpacingOffset: Int = -10,
@@ -44,11 +46,9 @@ data class IconSettings(
     var currentFontIndex: Int = 0,
     
     // Glow settings
-    var glowEnabled: Boolean = false,
     var glowStrength: Float = 1.0f,
     var glowColorHue: Float = 0f,
     var glowSize: Int = 5,
-    var glowDirectRgb: IntArray? = null, // RGB values when not using hue
     
     // CRT settings
     var crtEnabled: Boolean = true,
@@ -64,8 +64,6 @@ data class IconSettings(
     // Shadow settings
     var shadowOpacity: Int = 100
 ) {
-    // Direct RGB overrides for text lines
-    var directRgb: MutableMap<Int, IntArray> = mutableMapOf()
     
     companion object {
         fun createDefault(): IconSettings {
@@ -81,6 +79,7 @@ data class IconSettings(
             stretchX = stretchX,
             stretchY = stretchY,
             brightness = brightness,
+            imageAlpha = imageAlpha,
             bgHue = bgHue,
             bgBrightness = bgBrightness,
             bgScale = bgScale,
@@ -88,7 +87,6 @@ data class IconSettings(
             bgOffsetY = bgOffsetY,
             currentBgIndex = currentBgIndex,
             borderHue = borderHue,
-            borderDirectRgb = borderDirectRgb?.copyOf(),
             borderAlpha = borderAlpha,
             frameOffsetX = frameOffsetX,
             frameOffsetY = frameOffsetY,
@@ -97,18 +95,18 @@ data class IconSettings(
             lineHues = lineHues.toList(),
             lineRainbows = lineRainbows.toList(),
             lineOutlines = lineOutlines.toList(),
+            lineGlows = lineGlows.toList(),
             lineActive = lineActive.toList(),
             lineFontSpacingOffsets = lineFontSpacingOffsets.toList(),
+            lineLetterSpacings = lineLetterSpacings.toList(),
             lineTextOffsetXs = lineTextOffsetXs.toList(),
             lineTextOffsetYs = lineTextOffsetYs.toList(),
             lineSpacingOffset = lineSpacingOffset,
             fontPositionStep = fontPositionStep,
             currentFontIndex = currentFontIndex,
-            glowEnabled = glowEnabled,
             glowStrength = glowStrength,
             glowColorHue = glowColorHue,
             glowSize = glowSize,
-            glowDirectRgb = glowDirectRgb?.copyOf(),
             crtEnabled = crtEnabled,
             scanlineAlpha = scanlineAlpha,
             decorEnabled = decorEnabled,
@@ -117,6 +115,6 @@ data class IconSettings(
             decorOffsetX = decorOffsetX,
             decorOffsetY = decorOffsetY,
             shadowOpacity = shadowOpacity
-        ).also { it.directRgb = directRgb.toMutableMap() }
+        )
     }
 }

@@ -143,6 +143,7 @@ class TemplateManager(private val context: Context) {
         json.put("stretchX", settings.stretchX)
         json.put("stretchY", settings.stretchY)
         json.put("brightness", settings.brightness)
+        json.put("imageAlpha", settings.imageAlpha)
         
         // Background settings
         json.put("bgHue", settings.bgHue)
@@ -154,7 +155,6 @@ class TemplateManager(private val context: Context) {
         
         // Border settings
         json.put("borderHue", settings.borderHue)
-        json.put("borderDirectRgb", settings.borderDirectRgb?.let { JSONArray(it.toList()) } ?: JSONObject.NULL)
         json.put("borderAlpha", settings.borderAlpha)
         json.put("frameOffsetX", settings.frameOffsetX)
         json.put("frameOffsetY", settings.frameOffsetY)
@@ -165,8 +165,10 @@ class TemplateManager(private val context: Context) {
         json.put("lineHues", JSONArray(settings.lineHues.map { it.toDouble() }))
         json.put("lineRainbows", JSONArray(settings.lineRainbows))
         json.put("lineOutlines", JSONArray(settings.lineOutlines))
+        json.put("lineGlows", JSONArray(settings.lineGlows))
         json.put("lineActive", JSONArray(settings.lineActive))
         json.put("lineFontSpacingOffsets", JSONArray(settings.lineFontSpacingOffsets))
+        json.put("lineLetterSpacings", JSONArray(settings.lineLetterSpacings.map { it.toDouble() }))
         json.put("lineTextOffsetXs", JSONArray(settings.lineTextOffsetXs))
         json.put("lineTextOffsetYs", JSONArray(settings.lineTextOffsetYs))
         json.put("lineSpacingOffset", settings.lineSpacingOffset)
@@ -174,11 +176,9 @@ class TemplateManager(private val context: Context) {
         json.put("currentFontIndex", settings.currentFontIndex)
         
         // Glow settings
-        json.put("glowEnabled", settings.glowEnabled)
         json.put("glowStrength", settings.glowStrength)
         json.put("glowColorHue", settings.glowColorHue)
         json.put("glowSize", settings.glowSize)
-        json.put("glowDirectRgb", settings.glowDirectRgb?.let { JSONArray(it.toList()) } ?: JSONObject.NULL)
         
         // CRT settings
         json.put("crtEnabled", settings.crtEnabled)
@@ -194,13 +194,6 @@ class TemplateManager(private val context: Context) {
         // Shadow settings
         json.put("shadowOpacity", settings.shadowOpacity)
         
-        // Direct RGB overrides
-        val directRgbJson = JSONObject()
-        settings.directRgb.forEach { (index, array) ->
-            directRgbJson.put(index.toString(), JSONArray(array.toList()))
-        }
-        json.put("directRgb", directRgbJson)
-        
         return json.toString(2)
     }
     
@@ -214,6 +207,7 @@ class TemplateManager(private val context: Context) {
             stretchX = json.optDouble("stretchX", 1.0).toFloat(),
             stretchY = json.optDouble("stretchY", 1.0).toFloat(),
             brightness = json.optDouble("brightness", 0.9).toFloat(),
+            imageAlpha = json.optDouble("imageAlpha", 1.0).toFloat(),
             
             bgHue = json.optDouble("bgHue", 0.0).toFloat(),
             bgBrightness = json.optDouble("bgBrightness", 1.0).toFloat(),
@@ -223,9 +217,6 @@ class TemplateManager(private val context: Context) {
             currentBgIndex = json.optInt("currentBgIndex", 0),
             
             borderHue = json.optDouble("borderHue", 0.0).toFloat(),
-            borderDirectRgb = json.optJSONArray("borderDirectRgb")?.let { array ->
-                IntArray(array.length()) { array.getInt(it) }
-            },
             borderAlpha = json.optDouble("borderAlpha", 1.0).toFloat(),
             frameOffsetX = json.optInt("frameOffsetX", 0),
             frameOffsetY = json.optInt("frameOffsetY", 0),
@@ -247,13 +238,21 @@ class TemplateManager(private val context: Context) {
                 (0 until array.length()).map { array.getBoolean(it) }
             } ?: listOf(true, true, true),
             
+            lineGlows = json.optJSONArray("lineGlows")?.let { array ->
+                (0 until array.length()).map { array.getBoolean(it) }
+            } ?: listOf(false, false, false),
+            
             lineActive = json.optJSONArray("lineActive")?.let { array ->
                 (0 until array.length()).map { array.getBoolean(it) }
             } ?: listOf(true, true, false),
             
             lineFontSpacingOffsets = json.optJSONArray("lineFontSpacingOffsets")?.let { array ->
                 (0 until array.length()).map { array.getInt(it) }
-            } ?: listOf(-1, -1, -1),
+            } ?: listOf(0, 0, 0),
+            
+            lineLetterSpacings = json.optJSONArray("lineLetterSpacings")?.let { array ->
+                (0 until array.length()).map { array.getDouble(it).toFloat() }
+            } ?: listOf(0f, 0f, 0f),
             
             lineTextOffsetXs = json.optJSONArray("lineTextOffsetXs")?.let { array ->
                 (0 until array.length()).map { array.getInt(it) }
@@ -267,13 +266,9 @@ class TemplateManager(private val context: Context) {
             fontPositionStep = json.optInt("fontPositionStep", 1),
             currentFontIndex = json.optInt("currentFontIndex", 0),
             
-            glowEnabled = json.optBoolean("glowEnabled", false),
             glowStrength = json.optDouble("glowStrength", 1.0).toFloat(),
             glowColorHue = json.optDouble("glowColorHue", 0.0).toFloat(),
             glowSize = json.optInt("glowSize", 5),
-            glowDirectRgb = json.optJSONArray("glowDirectRgb")?.let { array ->
-                IntArray(array.length()) { array.getInt(it) }
-            },
             
             crtEnabled = json.optBoolean("crtEnabled", true),
             scanlineAlpha = json.optInt("scanlineAlpha", 20),
@@ -285,17 +280,7 @@ class TemplateManager(private val context: Context) {
             decorOffsetY = json.optInt("decorOffsetY", 0),
             
             shadowOpacity = json.optInt("shadowOpacity", 100)
-        ).also { settings ->
-            json.optJSONObject("directRgb")?.let { directRgbJson ->
-                val keys = directRgbJson.keys()
-                while (keys.hasNext()) {
-                    val key = keys.next()
-                    val array = directRgbJson.getJSONArray(key)
-                    val intArray = IntArray(array.length()) { array.getInt(it) }
-                    settings.directRgb[key.toInt()] = intArray
-                }
-            }
-        }
+        )
     }
     
     private fun saveBitmap(bitmap: Bitmap, file: File) {
