@@ -29,7 +29,7 @@ class IconRenderer {
     /**
      * Render the complete icon with all layers and effects
      */
-    fun renderIcon(
+    suspend fun renderIcon(
         settings: IconSettings,
         gameImage: Bitmap?,
         backgroundImage: Bitmap?,
@@ -39,13 +39,15 @@ class IconRenderer {
         alphaMask: Bitmap? = null,
         alpha2Mask: Bitmap? = null,
         borderShadow: Bitmap? = null
-    ): Bitmap {
+    ): Bitmap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
         val baseBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
+        kotlinx.coroutines.yield()
         val scaledBase = Bitmap.createScaledBitmap(baseBitmap, RENDER_SIZE, RENDER_SIZE, true)
         val canvas = Canvas(scaledBase)
         
         // Draw background
         backgroundImage?.let { bg ->
+            kotlinx.coroutines.yield()
             // First scale background to fill RENDER_SIZE
             val baseScale = RENDER_SIZE.toFloat() / bg.width.coerceAtLeast(bg.height)
             val fillBg = scaleBitmap(bg, baseScale * settings.bgScale)
@@ -60,6 +62,7 @@ class IconRenderer {
         
         // Draw game image
         gameImage?.let { game ->
+            kotlinx.coroutines.yield()
             val scale = (0.2f + ((settings.zoomLevel + 100) / 200f) * 1.8f) * 2f // Doubled scale for 512
             val scaledGame = scaleBitmap(game, scale * settings.stretchX, scale * settings.stretchY)
             val brightnessAdjustedGame = applyBrightness(scaledGame, settings.brightness)
@@ -69,6 +72,7 @@ class IconRenderer {
             canvas.drawBitmap(brightnessAdjustedGame, pasteX.toFloat(), pasteY.toFloat(), null)
         }
         
+        kotlinx.coroutines.yield()
         // Draw CRT scanlines
         if (settings.crtEnabled) {
             drawScanlines(canvas, settings.scanlineAlpha)
@@ -77,6 +81,7 @@ class IconRenderer {
         // Draw text
         drawText(canvas, settings, font)
         
+        kotlinx.coroutines.yield()
         // Draw decoration
         if (settings.decorEnabled && decorImage != null) {
             val margin = 44f // Doubled margin for 512
@@ -88,6 +93,7 @@ class IconRenderer {
         
         // Draw Border Shadow (over background/game as per user instruction)
         borderShadow?.let { shadow ->
+            kotlinx.coroutines.yield()
             val shadowOpacity = settings.shadowOpacity
             val shadowPaint = Paint().apply {
                 alpha = (shadowOpacity * 2.55f).toInt().coerceIn(0, 255)
@@ -98,6 +104,7 @@ class IconRenderer {
 
         // Draw frame (Border) on top of shadow
         frameImage?.let { frame ->
+            kotlinx.coroutines.yield()
             var tintedFrame = if (settings.borderDirectRgb != null) {
                 applyColorTint(frame, settings.borderDirectRgb!!)
             } else {
@@ -128,6 +135,7 @@ class IconRenderer {
             canvas.drawBitmap(scaledFrame, frameX.toFloat(), frameY.toFloat(), framePaint)
         }
         
+        kotlinx.coroutines.yield()
         // Create final output with alpha mask
         val result = Bitmap.createBitmap(RENDER_SIZE, RENDER_SIZE, Bitmap.Config.ARGB_8888)
         val resultCanvas = Canvas(result)
@@ -135,6 +143,7 @@ class IconRenderer {
         
         // Apply alpha mask to the final icon (Python: inner.putalpha(self.alpha_mask_img))
         alphaMask?.let { mask ->
+            kotlinx.coroutines.yield()
             val maskBitmap = applyLuminanceToAlpha(mask, RENDER_SIZE, RENDER_SIZE)
             val maskPaint = Paint().apply {
                 xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
@@ -142,7 +151,8 @@ class IconRenderer {
             resultCanvas.drawBitmap(maskBitmap, 0f, 0f, maskPaint)
         }
         
-        return Bitmap.createScaledBitmap(result, PREVIEW_SIZE, PREVIEW_SIZE, true)
+        kotlinx.coroutines.yield()
+        Bitmap.createScaledBitmap(result, PREVIEW_SIZE, PREVIEW_SIZE, true)
     }
 
     /**

@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun IconCreatorApp(activity: ComponentActivity) {
-    val viewModel: IconViewModel = viewModel { IconViewModel(activity.applicationContext) }
+    val viewModel: IconViewModel = viewModel { IconViewModel(activity.application) }
     val uiState by viewModel.uiState.collectAsState()
     val previewBitmap by viewModel.previewBitmap.collectAsState()
     

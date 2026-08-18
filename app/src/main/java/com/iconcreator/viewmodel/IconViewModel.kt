@@ -1,9 +1,9 @@
 package com.iconcreator.viewmodel
 
-import android.content.Context
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import android.graphics.Bitmap
 import android.graphics.Typeface
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.iconcreator.manager.AssetManager
 import com.iconcreator.manager.ImageSaver
@@ -19,12 +19,12 @@ import kotlinx.coroutines.launch
 /**
  * ViewModel for managing icon creator state and business logic
  */
-class IconViewModel(private val context: Context) : ViewModel() {
+class IconViewModel(application: Application) : AndroidViewModel(application) {
     
     private val renderer = IconRenderer()
-    private val assetManager = AssetManager(context)
-    private val imageSaver = ImageSaver(context)
-    private val templateManager = TemplateManager(context)
+    private val assetManager = AssetManager(application)
+    private val imageSaver = ImageSaver(application)
+    private val templateManager = TemplateManager(application)
     
     // UI State
     private val _uiState = MutableStateFlow(IconUiState())
@@ -74,9 +74,10 @@ class IconViewModel(private val context: Context) : ViewModel() {
     private val _previewBitmap = MutableStateFlow<Bitmap?>(null)
     val previewBitmap: StateFlow<Bitmap?> = _previewBitmap.asStateFlow()
     
+    private var renderJob: kotlinx.coroutines.Job? = null
+    
     init {
         loadAssets()
-        renderPreview()
     }
     
     /**
@@ -164,7 +165,8 @@ class IconViewModel(private val context: Context) : ViewModel() {
      * Render the icon preview
      */
     private fun renderPreview() {
-        viewModelScope.launch {
+        renderJob?.cancel()
+        renderJob = viewModelScope.launch {
             val preview = renderer.renderIcon(
                 settings = _settings.value,
                 gameImage = _gameImage.value,
@@ -369,7 +371,6 @@ class IconViewModel(private val context: Context) : ViewModel() {
                 gameImage = _gameImage.value,
                 backgroundImage = _backgroundImage.value,
                 frameImage = _frameImage.value,
-                font = _font.value,
                 decorImage = _decorImage.value,
                 previewImage = _previewBitmap.value,
                 templateName = templateName

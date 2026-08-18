@@ -2,7 +2,6 @@ package com.iconcreator.manager
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Typeface
 import com.iconcreator.model.IconSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,7 +26,6 @@ class TemplateManager(private val context: Context) {
         gameImage: Bitmap?,
         backgroundImage: Bitmap?,
         frameImage: Bitmap?,
-        font: Typeface?,
         decorImage: Bitmap?,
         previewImage: Bitmap?,
         templateName: String
@@ -156,6 +154,8 @@ class TemplateManager(private val context: Context) {
         
         // Border settings
         json.put("borderHue", settings.borderHue)
+        json.put("borderDirectRgb", settings.borderDirectRgb?.let { JSONArray(it.toList()) } ?: JSONObject.NULL)
+        json.put("borderAlpha", settings.borderAlpha)
         json.put("frameOffsetX", settings.frameOffsetX)
         json.put("frameOffsetY", settings.frameOffsetY)
         json.put("currentFrameIndex", settings.currentFrameIndex)
@@ -178,6 +178,7 @@ class TemplateManager(private val context: Context) {
         json.put("glowStrength", settings.glowStrength)
         json.put("glowColorHue", settings.glowColorHue)
         json.put("glowSize", settings.glowSize)
+        json.put("glowDirectRgb", settings.glowDirectRgb?.let { JSONArray(it.toList()) } ?: JSONObject.NULL)
         
         // CRT settings
         json.put("crtEnabled", settings.crtEnabled)
@@ -192,6 +193,13 @@ class TemplateManager(private val context: Context) {
         
         // Shadow settings
         json.put("shadowOpacity", settings.shadowOpacity)
+        
+        // Direct RGB overrides
+        val directRgbJson = JSONObject()
+        settings.directRgb.forEach { (index, array) ->
+            directRgbJson.put(index.toString(), JSONArray(array.toList()))
+        }
+        json.put("directRgb", directRgbJson)
         
         return json.toString(2)
     }
@@ -215,6 +223,10 @@ class TemplateManager(private val context: Context) {
             currentBgIndex = json.optInt("currentBgIndex", 0),
             
             borderHue = json.optDouble("borderHue", 0.0).toFloat(),
+            borderDirectRgb = json.optJSONArray("borderDirectRgb")?.let { array ->
+                IntArray(array.length()) { array.getInt(it) }
+            },
+            borderAlpha = json.optDouble("borderAlpha", 1.0).toFloat(),
             frameOffsetX = json.optInt("frameOffsetX", 0),
             frameOffsetY = json.optInt("frameOffsetY", 0),
             currentFrameIndex = json.optInt("currentFrameIndex", 0),
@@ -259,6 +271,9 @@ class TemplateManager(private val context: Context) {
             glowStrength = json.optDouble("glowStrength", 1.0).toFloat(),
             glowColorHue = json.optDouble("glowColorHue", 0.0).toFloat(),
             glowSize = json.optInt("glowSize", 5),
+            glowDirectRgb = json.optJSONArray("glowDirectRgb")?.let { array ->
+                IntArray(array.length()) { array.getInt(it) }
+            },
             
             crtEnabled = json.optBoolean("crtEnabled", true),
             scanlineAlpha = json.optInt("scanlineAlpha", 20),
@@ -270,7 +285,17 @@ class TemplateManager(private val context: Context) {
             decorOffsetY = json.optInt("decorOffsetY", 0),
             
             shadowOpacity = json.optInt("shadowOpacity", 100)
-        )
+        ).also { settings ->
+            json.optJSONObject("directRgb")?.let { directRgbJson ->
+                val keys = directRgbJson.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    val array = directRgbJson.getJSONArray(key)
+                    val intArray = IntArray(array.length()) { array.getInt(it) }
+                    settings.directRgb[key.toInt()] = intArray
+                }
+            }
+        }
     }
     
     private fun saveBitmap(bitmap: Bitmap, file: File) {
