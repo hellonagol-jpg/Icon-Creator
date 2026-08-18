@@ -4,22 +4,225 @@
             "outputFile": "com.iconcreator.app-mergeDebugResources-52:/values/values.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\hello\\Desktop\\Icon Creator\\IconCreatorAndroid\\app\\src\\main\\res\\values\\themes.xml",
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\88b50c6de8c41514d9ee63f25a5718e8\\transformed\\jetified-coil-base-2.5.0\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
+                    },
+                    "to": {
+                        "startLines": "68",
+                        "startColumns": "4",
+                        "startOffsets": "4346",
+                        "endColumns": "49",
+                        "endOffsets": "4391"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\0222061d0ff2bcffcb09a6dd2fb41318\\transformed\\lifecycle-viewmodel-2.6.2\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
+                    },
+                    "to": {
+                        "startLines": "98",
+                        "startColumns": "4",
+                        "startOffsets": "5917",
+                        "endColumns": "49",
+                        "endOffsets": "5962"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\Desktop\\Icon Creator\\Icon-Creator\\app\\src\\main\\res\\values\\colors.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
-                        "startOffsets": "55",
-                        "endColumns": "88",
-                        "endOffsets": "139"
+                        "startOffsets": "57",
+                        "endColumns": "49",
+                        "endOffsets": "102"
                     },
                     "to": {
-                        "startLines": "208",
+                        "startLines": "7",
                         "startColumns": "4",
-                        "startOffsets": "13015",
-                        "endColumns": "87",
-                        "endOffsets": "13098"
+                        "startOffsets": "501",
+                        "endColumns": "49",
+                        "endOffsets": "546"
                     }
                 },
+                {
+                    "source": "C:\\Users\\hello\\Desktop\\Icon Creator\\Icon-Creator\\app\\src\\main\\res\\values\\strings.xml",
+                    "from": {
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
+                    },
+                    "to": {
+                        "startLines": "102",
+                        "startColumns": "4",
+                        "startOffsets": "6173",
+                        "endColumns": "49",
+                        "endOffsets": "6218"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\2e36c548a35d7b2a35b22e193dd352ff\\transformed\\navigation-runtime-2.7.5\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
+                    },
+                    "to": {
+                        "startLines": "76",
+                        "startColumns": "4",
+                        "startOffsets": "4739",
+                        "endColumns": "52",
+                        "endOffsets": "4787"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\135c4ca566ff6885dc16afe5a67e7165\\transformed\\jetified-ui-release\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+                        "startColumns": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+                        "startOffsets": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1"
+                    },
+                    "to": {
+                        "startLines": "35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,69,70,71,72,99,114,115,152,153,155,157,158,160,161,162,163,164,165,167,171,172,173,188,191,194",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "2362,2421,2480,2540,2600,2660,2720,2780,2840,2900,2960,3020,3080,3139,3199,3259,3319,3379,3439,3499,3559,3619,3679,3739,3798,3858,3918,3977,4036,4095,4154,4213,4272,4396,4454,4509,4560,5967,7057,7122,9760,9826,9971,10075,10127,10256,10318,10372,10408,10442,10492,10599,10837,10884,10920,11889,12001,12112",
+                        "endLines": "35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,69,70,71,72,99,114,115,152,153,155,157,158,160,161,162,163,164,165,167,171,172,173,190,193,197",
+                        "endColumns": "58,58,59,59,59,59,59,59,59,59,59,59,58,59,59,59,59,59,59,59,59,59,59,58,59,59,58,58,58,58,58,58,73,57,54,50,54,52,64,53,65,100,57,51,59,61,53,35,33,49,53,45,46,35,89,12,12,12",
+                        "endOffsets": "2416,2475,2535,2595,2655,2715,2775,2835,2895,2955,3015,3075,3134,3194,3254,3314,3374,3434,3494,3554,3614,3674,3734,3793,3853,3913,3972,4031,4090,4149,4208,4267,4341,4449,4504,4555,4610,6015,7117,7171,9821,9922,10024,10122,10182,10313,10367,10403,10437,10487,10541,10640,10879,10915,11005,11996,12107,12302"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\9275c1922e631b0a36e3bc8afd0e4695\\transformed\\jetified-activity-1.8.1\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1,-1",
+                        "startColumns": "-1,-1",
+                        "startOffsets": "-1,-1"
+                    },
+                    "to": {
+                        "startLines": "78,96",
+                        "startColumns": "4,4",
+                        "startOffsets": "4859,5803",
+                        "endColumns": "41,59",
+                        "endOffsets": "4896,5858"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\05556dc549da6fe0c37a2afc833b2dcf\\transformed\\jetified-material3-1.1.2\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+                        "startColumns": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+                        "startOffsets": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1"
+                    },
+                    "to": {
+                        "startLines": "103,104,105,106,116,117,118,119,120,121,124,125,126,127,128,129,130,131,132,133,134,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,154,156,159,166,168,170,174,175,176,177,178,179,180,181,182,183,184,185,186,187",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "6223,6307,6389,6466,7176,7224,7285,7364,7466,7548,7664,7714,7779,7836,7901,7986,8077,8147,8240,8329,8423,8568,8655,8739,8831,8925,8985,9049,9132,9222,9285,9353,9421,9518,9623,9695,9927,10029,10187,10546,10645,10769,11010,11056,11106,11173,11240,11306,11371,11425,11497,11564,11634,11716,11762,11828",
+                        "endLines": "103,104,105,106,116,117,118,119,120,123,124,125,126,127,128,129,130,131,132,133,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,154,156,159,166,168,170,174,175,176,177,178,179,180,181,182,183,184,185,186,187",
+                        "endColumns": "83,81,76,79,47,60,78,101,81,13,49,64,56,64,84,90,69,92,88,93,13,86,83,91,93,59,63,82,89,62,67,67,96,104,71,64,43,45,68,52,52,67,45,49,66,66,65,64,53,71,66,69,81,45,65,60",
+                        "endOffsets": "6302,6384,6461,6541,7219,7280,7359,7461,7543,7659,7709,7774,7831,7896,7981,8072,8142,8235,8324,8418,8563,8650,8734,8826,8920,8980,9044,9127,9217,9280,9348,9416,9513,9618,9690,9755,9966,10070,10251,10594,10693,10832,11051,11101,11168,11235,11301,11366,11420,11492,11559,11629,11711,11757,11823,11884"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\c875fdb94cfede7e625f1ac5fa556be7\\transformed\\jetified-customview-poolingcontainer-1.0.0\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1,-1",
+                        "startColumns": "-1,-1",
+                        "startOffsets": "-1,-1"
+                    },
+                    "to": {
+                        "startLines": "73,77",
+                        "startColumns": "4,4",
+                        "startOffsets": "4615,4792",
+                        "endColumns": "53,66",
+                        "endOffsets": "4664,4854"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\8833869161b31eb28961ba01465854b6\\transformed\\jetified-savedstate-1.2.1\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
+                    },
+                    "to": {
+                        "startLines": "97",
+                        "startColumns": "4",
+                        "startOffsets": "5863",
+                        "endColumns": "53",
+                        "endOffsets": "5912"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\d4f4b33bd9f8e39540810d3f57c9647a\\transformed\\jetified-startup-runtime-1.1.1\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
+                    },
+                    "to": {
+                        "startLines": "101",
+                        "startColumns": "4",
+                        "startOffsets": "6090",
+                        "endColumns": "82",
+                        "endOffsets": "6168"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\Desktop\\Icon Creator\\Icon-Creator\\app\\src\\main\\res\\values\\themes.xml",
+                    "from": {
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
+                    },
+                    "to": {
+                        "startLines": "209",
+                        "startColumns": "4",
+                        "startOffsets": "13065",
+                        "endColumns": "87",
+                        "endOffsets": "13148"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\c8e0f582f84b6db24d1604e35f780ecd\\transformed\\core-1.12.0\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+                        "startColumns": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+                        "startOffsets": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,74,75,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,100,107,108,109,110,111,112,113,169,198,199,203,204,208,210,211",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "150,210,282,370,435,551,620,683,753,821,893,963,1024,1098,1171,1232,1293,1355,1419,1481,1542,1610,1710,1770,1836,1909,1978,2035,2087,2149,2221,2297,4669,4704,4901,4956,5019,5074,5132,5190,5251,5314,5371,5422,5472,5533,5590,5656,5690,5725,6020,6546,6613,6685,6754,6823,6897,6969,10698,12307,12424,12625,12735,12936,13153,13225",
+                        "endLines": "2,3,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,74,75,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,100,107,108,109,110,111,112,113,169,198,202,203,207,208,210,211",
+                        "endColumns": "59,71,87,64,65,68,62,69,67,71,69,60,73,72,60,60,61,63,61,60,67,99,59,65,72,68,56,51,61,71,75,64,34,34,54,62,54,57,57,60,62,56,50,49,60,56,65,33,34,34,69,66,71,68,68,73,71,87,70,116,12,109,12,128,71,66",
+                        "endOffsets": "205,277,365,430,496,615,678,748,816,888,958,1019,1093,1166,1227,1288,1350,1414,1476,1537,1605,1705,1765,1831,1904,1973,2030,2082,2144,2216,2292,2357,4699,4734,4951,5014,5069,5127,5185,5246,5309,5366,5417,5467,5528,5585,5651,5685,5720,5755,6085,6608,6680,6749,6818,6892,6964,7052,10764,12419,12620,12730,12931,13060,13220,13287"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\376906027786ba84f50f6e226b98639a\\transformed\\lifecycle-runtime-2.6.2\\res\\values\\values.xml",
+                    "from": {
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
+                    },
+                    "to": {
+                        "startLines": "95",
+                        "startColumns": "4",
+                        "startOffsets": "5760",
+                        "endColumns": "42",
+                        "endOffsets": "5798"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "C:\\Users\\hello\\.gradle\\daemon\\8.2\\com.iconcreator.app-mergeDebugResources-52:\\values\\values.xml",
+            "map": [
                 {
                     "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\88b50c6de8c41514d9ee63f25a5718e8\\transformed\\jetified-coil-base-2.5.0\\res\\values\\values.xml",
                     "from": {
@@ -52,6 +255,23 @@
                         "startOffsets": "5867",
                         "endColumns": "49",
                         "endOffsets": "5912"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\Desktop\\Icon Creator\\Icon-Creator\\app\\src\\main\\res\\values\\strings.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "49",
+                        "endOffsets": "100"
+                    },
+                    "to": {
+                        "startLines": "101",
+                        "startColumns": "4",
+                        "startOffsets": "6123",
+                        "endColumns": "49",
+                        "endOffsets": "6168"
                     }
                 },
                 {
@@ -107,23 +327,6 @@
                         "startOffsets": "4809,5753",
                         "endColumns": "41,59",
                         "endOffsets": "4846,5808"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\hello\\Desktop\\Icon Creator\\IconCreatorAndroid\\app\\src\\main\\res\\values\\strings.xml",
-                    "from": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "55",
-                        "endColumns": "49",
-                        "endOffsets": "100"
-                    },
-                    "to": {
-                        "startLines": "101",
-                        "startColumns": "4",
-                        "startOffsets": "6123",
-                        "endColumns": "49",
-                        "endOffsets": "6168"
                     }
                 },
                 {
@@ -213,6 +416,23 @@
                         "startOffsets": "6040",
                         "endColumns": "82",
                         "endOffsets": "6118"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\hello\\Desktop\\Icon Creator\\Icon-Creator\\app\\src\\main\\res\\values\\themes.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "88",
+                        "endOffsets": "139"
+                    },
+                    "to": {
+                        "startLines": "208",
+                        "startColumns": "4",
+                        "startOffsets": "13015",
+                        "endColumns": "87",
+                        "endOffsets": "13098"
                     }
                 },
                 {

@@ -42,6 +42,7 @@ color androidx_core_ripple_material_light
 color androidx_core_secondary_text_default_material_light
 color call_notification_answer_color
 color call_notification_decline_color
+color icon_background
 color notification_action_color_filter
 color notification_icon_bg_color
 color vector_tint_color
@@ -77,6 +78,7 @@ drawable ic_call_decline
 drawable ic_call_decline_low
 drawable ic_launcher_background
 drawable ic_launcher_foreground
+drawable icon_foreground_logo
 drawable notification_action_background
 drawable notification_bg
 drawable notification_bg_low

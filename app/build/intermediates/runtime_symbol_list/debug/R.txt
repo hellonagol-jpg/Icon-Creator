@@ -41,6 +41,7 @@ int color androidx_core_ripple_material_light 0x7f020000
 int color androidx_core_secondary_text_default_material_light 0x7f020001
 int color call_notification_answer_color 0x7f020002
 int color call_notification_decline_color 0x7f020003
+int color icon_background 0x7f020008
 int color notification_action_color_filter 0x7f020004
 int color notification_icon_bg_color 0x7f020005
 int color vector_tint_color 0x7f020006
@@ -76,6 +77,7 @@ int drawable ic_call_decline 0x7f040005
 int drawable ic_call_decline_low 0x7f040006
 int drawable ic_launcher_background 0x7f040007
 int drawable ic_launcher_foreground 0x7f040008
+int drawable icon_foreground_logo 0x7f040016
 int drawable notification_action_background 0x7f040009
 int drawable notification_bg 0x7f04000a
 int drawable notification_bg_low 0x7f04000b
