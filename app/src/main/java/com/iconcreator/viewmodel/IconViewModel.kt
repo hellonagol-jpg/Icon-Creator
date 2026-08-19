@@ -89,6 +89,12 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
     private val _glowIcon = MutableStateFlow<Bitmap?>(null)
     val glowIcon: StateFlow<Bitmap?> = _glowIcon.asStateFlow()
     
+    private val _mainBackground = MutableStateFlow<Bitmap?>(null)
+    val mainBackground: StateFlow<Bitmap?> = _mainBackground.asStateFlow()
+    
+    private val _borderX = MutableStateFlow<Bitmap?>(null)
+    val borderX: StateFlow<Bitmap?> = _borderX.asStateFlow()
+    
     // Rendered preview
     private val _previewBitmap = MutableStateFlow<Bitmap?>(null)
     val previewBitmap: StateFlow<Bitmap?> = _previewBitmap.asStateFlow()
@@ -104,14 +110,22 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
      */
     private fun loadAssets() {
         viewModelScope.launch {
+            updateUiState { isLoading = true; loadingProgress = 0f }
+            
             _backgrounds.value = assetManager.loadBackgrounds()
+            updateUiState { loadingProgress = 0.1f }
+            
             _borders.value = assetManager.loadBorders()
+            updateUiState { loadingProgress = 0.2f }
             
             val fontFiles = assetManager.listAssetFiles("Fonts")
             _fontNames.value = fontFiles
             _fonts.value = fontFiles.mapNotNull { assetManager.loadFont("Fonts/$it") }
+            updateUiState { loadingProgress = 0.4f }
             
             _decorations.value = assetManager.loadDecorations()
+            updateUiState { loadingProgress = 0.5f }
+            
             _alphaMask.value = assetManager.loadAlphaMask()
             _alpha2Mask.value = assetManager.loadAlpha2Mask()
             _borderShadow.value = assetManager.loadBorderShadow()
@@ -121,8 +135,12 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
             _rainbowIcon.value = assetManager.loadRainbowIcon()
             _outlineIcon.value = assetManager.loadOutlineIcon()
             _glowIcon.value = assetManager.loadGlowIcon()
+            _mainBackground.value = assetManager.loadBitmap("Images/mainbackground.png")
+            _borderX.value = assetManager.loadBitmap("Images/borderx.png")
+            updateUiState { loadingProgress = 0.8f }
             
             loadTemplates()
+            updateUiState { loadingProgress = 0.9f }
             
             // Load initial assets
             if (_backgrounds.value.isNotEmpty()) {
@@ -139,6 +157,7 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
             }
             
             renderPreview()
+            updateUiState { loadingProgress = 1.0f; isLoading = false }
         }
     }
     
@@ -492,7 +511,8 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
  * UI state for the icon creator screen
  */
 data class IconUiState(
-    var isLoading: Boolean = false,
+    var isLoading: Boolean = true,
+    var loadingProgress: Float = 0f,
     var errorMessage: String? = null,
     var successMessage: String? = null
 )

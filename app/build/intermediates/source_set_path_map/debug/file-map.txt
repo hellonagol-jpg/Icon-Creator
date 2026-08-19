@@ -48,9 +48,10 @@ com.iconcreator.app-jetified-ui-geometry-release-46 C:\Users\hello\.gradle\cache
 com.iconcreator.app-lifecycle-livedata-core-2.6.2-47 C:\Users\hello\.gradle\caches\transforms-3\f157024bc874bbe12a7e9e09592879c0\transformed\lifecycle-livedata-core-2.6.2\res
 com.iconcreator.app-jetified-lifecycle-viewmodel-savedstate-2.6.2-48 C:\Users\hello\.gradle\caches\transforms-3\f9606e20d5f55395cb2665fb7302703a\transformed\jetified-lifecycle-viewmodel-savedstate-2.6.2\res
 com.iconcreator.app-jetified-foundation-layout-release-49 C:\Users\hello\.gradle\caches\transforms-3\fc34f1e3b07c51a0341944cfaf24d652\transformed\jetified-foundation-layout-release\res
-com.iconcreator.app-resValues-50 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\build\generated\res\resValues\debug
-com.iconcreator.app-packageDebugResources-51 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
-com.iconcreator.app-packageDebugResources-52 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
-com.iconcreator.app-merged_res-53 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\build\intermediates\merged_res\debug
-com.iconcreator.app-debug-54 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\debug\res
-com.iconcreator.app-main-55 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\res
+com.iconcreator.app-jetified-core-splashscreen-1.0.1-50 C:\Users\hello\.gradle\caches\transforms-3\ffbc5fcf259bce4e28ea79c5334299c6\transformed\jetified-core-splashscreen-1.0.1\res
+com.iconcreator.app-resValues-51 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\build\generated\res\resValues\debug
+com.iconcreator.app-packageDebugResources-52 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.iconcreator.app-packageDebugResources-53 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.iconcreator.app-merged_res-54 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\build\intermediates\merged_res\debug
+com.iconcreator.app-debug-55 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\debug\res
+com.iconcreator.app-main-56 C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\res

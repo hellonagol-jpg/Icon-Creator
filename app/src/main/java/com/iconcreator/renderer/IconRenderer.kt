@@ -39,33 +39,35 @@ class IconRenderer {
         alphaMask: Bitmap? = null,
         alpha2Mask: Bitmap? = null,
         borderShadow: Bitmap? = null,
-        scanlineOverlay: Bitmap? = null
+        scanlineOverlay: Bitmap? = null,
+        isPreview: Boolean = false
     ): Bitmap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+        val renderSize = if (isPreview) PREVIEW_SIZE else RENDER_SIZE
         val baseBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
         kotlinx.coroutines.yield()
-        val scaledBase = Bitmap.createScaledBitmap(baseBitmap, RENDER_SIZE, RENDER_SIZE, true)
+        val scaledBase = Bitmap.createScaledBitmap(baseBitmap, renderSize, renderSize, true)
         val canvas = Canvas(scaledBase)
         
         // Draw background
         backgroundImage?.let { bg ->
             kotlinx.coroutines.yield()
-            // First scale background to fill RENDER_SIZE
-            val baseScale = RENDER_SIZE.toFloat() / bg.width.coerceAtLeast(bg.height)
+            // First scale background to fill renderSize
+            val baseScale = renderSize.toFloat() / bg.width.coerceAtLeast(bg.height)
             val fillBg = scaleBitmap(bg, baseScale * settings.bgScale)
             
             val hueShiftedBg = applyHueShift(fillBg, settings.bgHue)
             val brightnessAdjustedBg = applyBrightness(hueShiftedBg, settings.bgBrightness)
             
-            val pasteX = (RENDER_SIZE - brightnessAdjustedBg.width) / 2 + settings.bgOffsetX * 2 // Doubled offset for 512
-            val pasteY = (RENDER_SIZE - brightnessAdjustedBg.height) / 2 + settings.bgOffsetY * 2
+            val pasteX = (renderSize - brightnessAdjustedBg.width) / 2 + settings.bgOffsetX * (renderSize / 256)
+            val pasteY = (renderSize - brightnessAdjustedBg.height) / 2 + settings.bgOffsetY * (renderSize / 256)
             canvas.drawBitmap(brightnessAdjustedBg, pasteX.toFloat(), pasteY.toFloat(), null)
         }
         
         // Draw game image
         gameImage?.let { game ->
             kotlinx.coroutines.yield()
-            // Base scale to fit the image inside RENDER_SIZE
-            val baseScale = RENDER_SIZE.toFloat() / Math.max(game.width, game.height)
+            // Base scale to fit the image inside renderSize
+            val baseScale = renderSize.toFloat() / Math.max(game.width, game.height)
             // Zoom multiplier (centered at 50 for 1x fit)
             val zoomFactor = if (settings.zoomLevel >= 50) {
                 1f + (settings.zoomLevel - 50) / 50f // 50->1x, 100->2x, 200->4x
@@ -81,27 +83,27 @@ class IconRenderer {
                 alpha = (settings.imageAlpha * 255).toInt().coerceIn(0, 255)
             }
             
-            val pasteX = (RENDER_SIZE - brightnessAdjustedGame.width) / 2 + settings.offsetX * 2
-            val pasteY = (RENDER_SIZE - brightnessAdjustedGame.height) / 2 + settings.offsetY * 2
+            val pasteX = (renderSize - brightnessAdjustedGame.width) / 2 + settings.offsetX * (renderSize / 256)
+            val pasteY = (renderSize - brightnessAdjustedGame.height) / 2 + settings.offsetY * (renderSize / 256)
             canvas.drawBitmap(brightnessAdjustedGame, pasteX.toFloat(), pasteY.toFloat(), gamePaint)
         }
         
         kotlinx.coroutines.yield()
         // Draw CRT scanlines
         if (settings.crtEnabled && scanlineOverlay != null) {
-            drawScanlines(canvas, scanlineOverlay, settings.scanlineAlpha)
+            drawScanlines(canvas, scanlineOverlay, settings.scanlineAlpha, renderSize)
         }
         
         // Draw text
-        drawText(canvas, settings, font)
+        drawText(canvas, settings, font, renderSize)
         
         kotlinx.coroutines.yield()
         // Draw decoration
         if (settings.decorEnabled && decorImage != null) {
-            val margin = 44f // Doubled margin for 512
-            val scaledDecor = scaleBitmap(decorImage, settings.decorScale * 2f)
-            val decorX = RENDER_SIZE - scaledDecor.width - margin + settings.decorOffsetX * 2
-            val decorY = RENDER_SIZE - scaledDecor.height - margin + settings.decorOffsetY * 2
+            val margin = 44f * (renderSize / 512f)
+            val scaledDecor = scaleBitmap(decorImage, settings.decorScale * (renderSize / 256f))
+            val decorX = renderSize - scaledDecor.width - margin + settings.decorOffsetX * (renderSize / 256f)
+            val decorY = renderSize - scaledDecor.height - margin + settings.decorOffsetY * (renderSize / 256f)
             canvas.drawBitmap(scaledDecor, decorX, decorY, null)
         }
         
@@ -112,7 +114,7 @@ class IconRenderer {
             val shadowPaint = Paint().apply {
                 alpha = (shadowOpacity * 2.55f).toInt().coerceIn(0, 255)
             }
-            val scaledShadow = Bitmap.createScaledBitmap(shadow, RENDER_SIZE, RENDER_SIZE, true)
+            val scaledShadow = Bitmap.createScaledBitmap(shadow, renderSize, renderSize, true)
             canvas.drawBitmap(scaledShadow, 0f, 0f, shadowPaint)
         }
 
@@ -139,22 +141,21 @@ class IconRenderer {
                 alpha = (settings.borderAlpha * 255).toInt().coerceIn(0, 255)
             }
             
-            val scaledFrame = Bitmap.createScaledBitmap(tintedFrame, RENDER_SIZE, RENDER_SIZE, true)
-            val frameX = (RENDER_SIZE - scaledFrame.width) / 2 + settings.frameOffsetX
-            val frameY = (RENDER_SIZE - scaledFrame.height) / 2 + settings.frameOffsetY
+            val scaledFrame = Bitmap.createScaledBitmap(tintedFrame, renderSize, renderSize, true)
+            val frameX = (renderSize - scaledFrame.width) / 2 + settings.frameOffsetX * (renderSize / 512)
+            val frameY = (renderSize - scaledFrame.height) / 2 + settings.frameOffsetY * (renderSize / 512)
             canvas.drawBitmap(scaledFrame, frameX.toFloat(), frameY.toFloat(), framePaint)
         }
         
         kotlinx.coroutines.yield()
         // Create final output with alpha mask
-        val result = Bitmap.createBitmap(RENDER_SIZE, RENDER_SIZE, Bitmap.Config.ARGB_8888)
+        val result = Bitmap.createBitmap(renderSize, renderSize, Bitmap.Config.ARGB_8888)
         val resultCanvas = Canvas(result)
         resultCanvas.drawBitmap(scaledBase, 0f, 0f, null)
         
         // Apply alpha mask to the final icon (Python: inner.putalpha(self.alpha_mask_img))
         alphaMask?.let { mask ->
-            kotlinx.coroutines.yield()
-            val maskBitmap = applyLuminanceToAlpha(mask, RENDER_SIZE, RENDER_SIZE)
+            val maskBitmap = applyLuminanceToAlpha(mask, renderSize, renderSize)
             val maskPaint = Paint().apply {
                 xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
             }
@@ -162,7 +163,11 @@ class IconRenderer {
         }
         
         kotlinx.coroutines.yield()
-        Bitmap.createScaledBitmap(result, PREVIEW_SIZE, PREVIEW_SIZE, true)
+        if (isPreview) {
+            result
+        } else {
+            Bitmap.createScaledBitmap(result, PREVIEW_SIZE, PREVIEW_SIZE, true)
+        }
     }
 
     /**
@@ -240,39 +245,39 @@ class IconRenderer {
         return result
     }
     
-    private fun drawScanlines(canvas: Canvas, overlay: Bitmap, alpha: Int) {
+    private fun drawScanlines(canvas: Canvas, overlay: Bitmap, alpha: Int, renderSize: Int) {
         val paint = Paint().apply {
             this.alpha = (alpha * 2.55f).toInt().coerceIn(0, 255)
         }
-        val scaledOverlay = Bitmap.createScaledBitmap(overlay, RENDER_SIZE, RENDER_SIZE, true)
+        val scaledOverlay = Bitmap.createScaledBitmap(overlay, renderSize, renderSize, true)
         canvas.drawBitmap(scaledOverlay, 0f, 0f, paint)
     }
     
-    private fun drawText(canvas: Canvas, settings: IconSettings, font: Typeface?) {
+    private fun drawText(canvas: Canvas, settings: IconSettings, font: Typeface?, renderSize: Int) {
         val activeLinesIndices = settings.lineActive.indices.filter { settings.lineActive[it] }
         val baseSize = when (activeLinesIndices.size) {
-            1 -> 88 // Doubled for 512
-            2 -> 76
-            else -> 64
+            1 -> 88f * (renderSize / 512f)
+            2 -> 76f * (renderSize / 512f)
+            else -> 64f * (renderSize / 512f)
         }
         
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG)
         font?.let { paint.typeface = it }
         
-        val totalSpacing = settings.lineSpacingOffset * 2
-        var yOffset = (RENDER_SIZE * 0.85f).toInt() - ((activeLinesIndices.size - 1) * (baseSize + totalSpacing))
+        val totalSpacing = settings.lineSpacingOffset * 2 * (renderSize / 512f)
+        var yOffset = (renderSize * 0.85f).toInt() - ((activeLinesIndices.size - 1) * (baseSize + totalSpacing))
         
         for (lineIndex in activeLinesIndices) {
             val line = settings.titleLines.getOrElse(lineIndex) { "" }
-            var fontSize = (baseSize + settings.lineFontSpacingOffsets.getOrElse(lineIndex) { 0 } * 2).coerceIn(10, 1000).toFloat()
+            var fontSize = (baseSize + settings.lineFontSpacingOffsets.getOrElse(lineIndex) { 0 } * 2 * (renderSize / 512f)).coerceIn(10f, 2000f)
             paint.textSize = fontSize
             
             // Apply letter spacing
-            val letterSpacing = settings.lineLetterSpacings.getOrElse(lineIndex) { 0f }
+            val letterSpacing = settings.lineLetterSpacings.getOrElse(lineIndex) { 0f } * (renderSize / 512f)
             paint.letterSpacing = letterSpacing / fontSize
             
             // Auto-resize if text is too wide
-            val maxWidth = RENDER_SIZE * 0.9f
+            val maxWidth = renderSize * 0.9f
             var textWidth = paint.measureText(line)
             if (textWidth > maxWidth) {
                 val scale = maxWidth / textWidth
@@ -285,8 +290,8 @@ class IconRenderer {
             val color = getSolidColor(settings.lineHues.getOrElse(lineIndex) { 0f })
             paint.color = color
             
-            val textX = (RENDER_SIZE - textWidth) / 2 + settings.lineTextOffsetXs.getOrElse(lineIndex) { 0 } * 2
-            val textY = yOffset.toFloat() + settings.lineTextOffsetYs.getOrElse(lineIndex) { 4 } * 2
+            val textX = (renderSize - textWidth) / 2 + settings.lineTextOffsetXs.getOrElse(lineIndex) { 0 } * 2 * (renderSize / 512f)
+            val textY = yOffset.toFloat() + settings.lineTextOffsetYs.getOrElse(lineIndex) { 4 } * 2 * (renderSize / 512f)
             
             // Apply Rainbow effect if enabled
             if (settings.lineRainbows.getOrElse(lineIndex) { false }) {
@@ -314,8 +319,8 @@ class IconRenderer {
                 val glowPaint = Paint(paint)
                 glowPaint.style = Paint.Style.STROKE
                 // Reduced size and strength for a less intense glow
-                glowPaint.strokeWidth = settings.glowSize.toFloat() * 1.2f
-                glowPaint.maskFilter = android.graphics.BlurMaskFilter(settings.glowSize * settings.glowStrength * 1.0f, android.graphics.BlurMaskFilter.Blur.NORMAL)
+                glowPaint.strokeWidth = settings.glowSize.toFloat() * 1.2f * (renderSize / 512f)
+                glowPaint.maskFilter = android.graphics.BlurMaskFilter(settings.glowSize * settings.glowStrength * 1.0f * (renderSize / 512f), android.graphics.BlurMaskFilter.Blur.NORMAL)
                 
                 // Match text color/effect for glow
                 if (settings.lineRainbows.getOrElse(lineIndex) { false }) {

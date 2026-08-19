@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.iconcreator.app-mergeDebugResources-52:/values-bs/values-bs.xml",
+            "outputFile": "com.iconcreator.app-mergeDebugResources-53:/values-bs/values-bs.xml",
             "map": [
                 {
                     "source": "C:\\Users\\hello\\.gradle\\caches\\transforms-3\\135c4ca566ff6885dc16afe5a67e7165\\transformed\\jetified-ui-release\\res\\values-bs\\values-bs.xml",

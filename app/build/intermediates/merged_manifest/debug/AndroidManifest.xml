@@ -38,7 +38,7 @@
         <activity
             android:name="com.iconcreator.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.IconCreator" >
+            android:theme="@style/Theme.App.Starting" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

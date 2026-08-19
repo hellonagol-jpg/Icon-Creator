@@ -52,6 +52,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -69,74 +72,108 @@ fun IconCreatorScreen(
     uiState: IconUiState,
     previewBitmap: Bitmap?
 ) {
+    if (uiState.isLoading) {
+        LoadingScreen(uiState.loadingProgress)
+        return
+    }
+
     val settings by viewModel.settings.collectAsState()
     
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color(0xFF1A1A1A))
-        ) {
-            val isWide = maxWidth > 600.dp
-            
-            if (isWide) {
-                Row(modifier = Modifier.fillMaxSize()) {
-                    // Left panel - Preview and main actions
-                    Column(
-                        modifier = Modifier
-                            .weight(0.8f)
-                            .fillMaxHeight()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        PreviewBox(previewBitmap = previewBitmap)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        ActionButtons(viewModel)
-                    }
-                    
-                    // Right panel - Settings (scrollable)
-                    RightPanel(
-                        viewModel = viewModel,
-                        settings = settings,
-                        modifier = Modifier.weight(1.2f),
-                        isScrollable = true
-                    )
-                }
-            } else {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    // Sticky Preview at the top
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF1A1A1A))
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        PreviewBox(
-                            previewBitmap = previewBitmap,
-                            modifier = Modifier.fillMaxWidth(0.7f) // Slightly smaller on mobile to leave room
-                        )
-                    }
-                    
-                    // Scrollable content (Actions and Settings)
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .verticalScroll(rememberScrollState())
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        ActionButtons(viewModel)
+        val mainBackground by viewModel.mainBackground.collectAsState()
+        
+        Box(modifier = Modifier.fillMaxSize()) {
+            // App Background Image
+            mainBackground?.let {
+                Image(
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                )
+            } ?: Box(modifier = Modifier.fillMaxSize().background(Color(0xFF1A1A1A)))
+
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                val isWide = maxWidth > 600.dp
+                
+                if (isWide) {
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        // Left panel - Preview and main actions
+                        Column(
+                            modifier = Modifier
+                                .weight(0.8f)
+                                .fillMaxHeight()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            PreviewBox(previewBitmap = previewBitmap)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            ActionButtons(viewModel)
+                        }
                         
+                        // Vertical Separator
+                        val borderX by viewModel.borderX.collectAsState()
+                        RepeatingBorder(
+                            bitmap = borderX,
+                            isVertical = true,
+                            modifier = Modifier.fillMaxHeight().width(24.dp)
+                        )
+
+                        // Right panel - Settings (scrollable)
                         RightPanel(
                             viewModel = viewModel,
                             settings = settings,
-                            modifier = Modifier.fillMaxWidth(),
-                            isScrollable = false
+                            modifier = Modifier.weight(1.2f),
+                            isScrollable = true
                         )
+                    }
+                } else {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // Sticky Preview at the top
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF1A1A1A).copy(alpha = 0.5f))
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            PreviewBox(
+                                previewBitmap = previewBitmap,
+                                modifier = Modifier.fillMaxWidth(0.7f) // Slightly smaller on mobile to leave room
+                            )
+                        }
+                        
+                        // Horizontal Separator
+                        val borderX by viewModel.borderX.collectAsState()
+                        RepeatingBorder(
+                            bitmap = borderX,
+                            isVertical = false,
+                            modifier = Modifier.fillMaxWidth().height(24.dp)
+                        )
+
+                        // Scrollable content (Actions and Settings)
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            ActionButtons(viewModel)
+                            
+                            RightPanel(
+                                viewModel = viewModel,
+                                settings = settings,
+                                modifier = Modifier.fillMaxWidth(),
+                                isScrollable = false
+                            )
+                        }
                     }
                 }
             }
@@ -514,7 +551,7 @@ fun SectionHeader(text: String, color: Color, isExpanded: Boolean, onClick: () -
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color, shape = MaterialTheme.shapes.medium)
+            .background(color.copy(alpha = 0.8f), shape = MaterialTheme.shapes.medium)
             .clickable { onClick() }
             .padding(12.dp)
     ) {
@@ -1126,6 +1163,85 @@ fun SliderWithLabel(
 }
 
 @Composable
+fun LoadingScreen(progress: Float) {
+    val context = LocalContext.current
+    val loadingBitmap = remember {
+        try {
+            context.assets.open("Images/loading.png").use { 
+                android.graphics.BitmapFactory.decodeStream(it)
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color.Black),
+        contentAlignment = Alignment.Center
+    ) {
+        loadingBitmap?.let {
+            Image(
+                bitmap = it.asImageBitmap(),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 64.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Loading Assets... ${(progress * 100).toInt()}%",
+                color = Color.White,
+                style = MaterialTheme.typography.labelLarge
+            )
+            
+            // Rainbow Progress Bar
+            val rainbowBrush = Brush.linearGradient(
+                colors = listOf(
+                    Color.Red, Color(0xFFFFA500), Color.Yellow, 
+                    Color.Green, Color.Blue, Color(0xFF4B0082), Color(0xFFEE82EE)
+                )
+            )
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp)
+                    .background(Color.White.copy(alpha = 0.2f), shape = MaterialTheme.shapes.medium)
+                    .padding(2.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress.coerceIn(0.01f, 1f))
+                        .fillMaxHeight()
+                        .background(rainbowBrush, shape = MaterialTheme.shapes.small)
+                        .drawWithContent {
+                            drawContent()
+                            // Video game "glassy" shine effect
+                            drawRect(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.5f),
+                                        Color.Transparent,
+                                        Color.Black.copy(alpha = 0.3f)
+                                    )
+                                )
+                            )
+                        }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun FontSelectorDialog(
     viewModel: IconViewModel,
     currentIndex: Int,
@@ -1198,28 +1314,32 @@ fun RepeatingIconButton(
     Box(
         modifier = modifier
             .size(48.dp)
+            .clickable(
+                enabled = enabled,
+                onClick = { /* Handle by pointerInput for repeating */ },
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = androidx.compose.material.ripple.rememberRipple(bounded = false)
+            )
             .pointerInput(enabled) {
                 if (!enabled) return@pointerInput
                 detectTapGestures(
                     onPress = {
                         val job = scope.launch {
-                            delay(400) // Initial delay before repeating
+                            delay(400)
                             while (true) {
                                 currentOnClick()
-                                delay(80) // Repeat delay
+                                delay(100)
                             }
                         }
                         try {
-                            currentOnClick() // First click on press
+                            currentOnClick()
                             awaitRelease()
                         } finally {
                             job.cancel()
                         }
                     }
                 )
-            }
-            .background(Color.Transparent, MaterialTheme.shapes.small)
-            .padding(4.dp),
+            },
         contentAlignment = Alignment.Center
     ) {
         content()
@@ -1282,6 +1402,60 @@ fun NavigationRow(
                     contentDescription = "Next",
                     tint = Color(0xFF3498DB)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun RepeatingBorder(
+    bitmap: Bitmap?,
+    isVertical: Boolean,
+    modifier: Modifier = Modifier
+) {
+    bitmap?.let { b ->
+        androidx.compose.foundation.Canvas(modifier = modifier) {
+            val paint = android.graphics.Paint().apply {
+                isAntiAlias = true
+                alpha = (255 * 0.1f).toInt()
+            }
+            
+            val nativeCanvas = drawContext.canvas.nativeCanvas
+            val bWidth = b.width.toFloat()
+            val bHeight = b.height.toFloat()
+            
+            if (isVertical) {
+                // Scale width to fit the container width
+                val scale = size.width / bWidth
+                val drawW = size.width
+                val drawH = bHeight * scale
+                
+                var currentY = 0f
+                while (currentY < size.height) {
+                    nativeCanvas.drawBitmap(
+                        b,
+                        null,
+                        android.graphics.RectF(0f, currentY, drawW, currentY + drawH),
+                        paint
+                    )
+                    currentY += drawH
+                }
+            } else {
+                // Horizontal: Scale height to fit container height
+                val scale = size.height / bHeight
+                val drawH = size.height
+                val drawW = bWidth * scale
+                
+                var currentX = 0f
+                while (currentX < size.width) {
+                    nativeCanvas.drawBitmap(
+                        b,
+                        null,
+                        android.graphics.RectF(currentX, 0f, currentX + drawW, drawH),
+                        paint
+                    )
+                    currentX += drawW
+                }
             }
         }
     }

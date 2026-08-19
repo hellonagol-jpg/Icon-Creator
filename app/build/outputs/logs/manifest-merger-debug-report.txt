@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:2:1-32:12
-INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:2:1-32:12
-INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:2:1-32:12
-INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:2:1-32:12
+ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:2:1-32:12
+INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:2:1-32:12
+INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:2:1-32:12
+INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:2:1-32:12
 MERGED from [io.coil-kt:coil-compose:2.5.0] C:\Users\hello\.gradle\caches\transforms-3\4846bb26930685f7829b61c57a984f7c\transformed\jetified-coil-compose-2.5.0\AndroidManifest.xml:2:1-7:12
 MERGED from [io.coil-kt:coil-compose-base:2.5.0] C:\Users\hello\.gradle\caches\transforms-3\93bb95afc537558513949f296dc76dbf\transformed\jetified-coil-compose-base-2.5.0\AndroidManifest.xml:2:1-7:12
 MERGED from [io.coil-kt:coil:2.5.0] C:\Users\hello\.gradle\caches\transforms-3\f1068db46a6dc47eb204ca0844b96f42\transformed\jetified-coil-2.5.0\AndroidManifest.xml:2:1-7:12
@@ -57,6 +57,7 @@ MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2] C:\Users\hell
 MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.6.2] C:\Users\hello\.gradle\caches\transforms-3\45a7d0b58a9486b4962aa4aaabe1dc24\transformed\jetified-lifecycle-runtime-ktx-2.6.2\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.compose.runtime:runtime-saveable-android:1.5.4] C:\Users\hello\.gradle\caches\transforms-3\9c768c924ca2acb9f801b61eebce2dd5\transformed\jetified-runtime-saveable-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.runtime:runtime-android:1.5.4] C:\Users\hello\.gradle\caches\transforms-3\b4062a51cf30b89988c8971d5e5d592c\transformed\jetified-runtime-release\AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.core:core-splashscreen:1.0.1] C:\Users\hello\.gradle\caches\transforms-3\ffbc5fcf259bce4e28ea79c5334299c6\transformed\jetified-core-splashscreen-1.0.1\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.annotation:annotation-experimental:1.3.0] C:\Users\hello\.gradle\caches\transforms-3\63bd3f0342e78a2f7ca0dae904199161\transformed\jetified-annotation-experimental-1.3.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\hello\.gradle\caches\transforms-3\54e19ededdf485f17df3fdff51655f8f\transformed\interpolator-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\hello\.gradle\caches\transforms-3\2001b411a6caddb6ab9573e39eb00977\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:17:1-27:12
@@ -66,34 +67,34 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\hello\.gradle\cach
 MERGED from [androidx.tracing:tracing:1.0.0] C:\Users\hello\.gradle\caches\transforms-3\c35e05781464704b2f08dc1e2a320017\transformed\jetified-tracing-1.0.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.exifinterface:exifinterface:1.3.6] C:\Users\hello\.gradle\caches\transforms-3\5c6475428a30cff8bc220190108b4b3f\transformed\exifinterface-1.3.6\AndroidManifest.xml:17:1-24:12
 	package
-		INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml
 	android:versionName
-		INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml
 	xmlns:tools
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:3:5-51
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:3:5-51
 	android:versionCode
-		INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml
 	xmlns:android
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:2:11-69
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:2:11-69
 uses-permission#android.permission.READ_EXTERNAL_STORAGE
-ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:5:5-6:38
+ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:5:5-6:38
 	android:maxSdkVersion
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:6:9-35
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:6:9-35
 	android:name
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:5:22-77
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:5:22-77
 uses-permission#android.permission.READ_MEDIA_IMAGES
-ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:7:5-76
+ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:7:5-76
 	android:name
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:7:22-73
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:7:22-73
 uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
-ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:8:5-9:38
+ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:8:5-9:38
 	android:maxSdkVersion
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:9:9-35
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:9:9-35
 	android:name
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:8:22-78
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:8:22-78
 application
-ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:11:5-30:19
-INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:11:5-30:19
+ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:11:5-30:19
+INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:11:5-30:19
 MERGED from [androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\hello\.gradle\caches\transforms-3\7d1ea71fa3d697046132a98480066f21\transformed\jetified-ui-test-manifest-1.5.4\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\hello\.gradle\caches\transforms-3\7d1ea71fa3d697046132a98480066f21\transformed\jetified-ui-test-manifest-1.5.4\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\hello\.gradle\caches\transforms-3\71e4e3957ad41eb695989c726d855cac\transformed\jetified-ui-tooling-release\AndroidManifest.xml:22:5-26:19
@@ -111,49 +112,49 @@ MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\hello\.g
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\hello\.gradle\caches\transforms-3\d4f4b33bd9f8e39540810d3f57c9647a\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\hello\.gradle\caches\transforms-3\d4f4b33bd9f8e39540810d3f57c9647a\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
 	android:extractNativeLibs
-		INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.12.0] C:\Users\hello\.gradle\caches\transforms-3\c8e0f582f84b6db24d1604e35f780ecd\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:18:9-35
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:18:9-35
 	android:label
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:16:9-41
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:16:9-41
 	android:fullBackupContent
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:14:9-54
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:14:9-54
 	android:roundIcon
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:17:9-54
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:17:9-54
 	tools:targetApi
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:20:9-29
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:20:9-29
 	android:icon
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:15:9-43
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:15:9-43
 	android:allowBackup
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:12:9-35
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:12:9-35
 	android:theme
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:19:9-49
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:19:9-49
 	android:dataExtractionRules
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:13:9-65
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:13:9-65
 activity#com.iconcreator.MainActivity
-ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:21:9-29:20
+ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:21:9-29:20
 	android:exported
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:23:13-36
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:23:13-36
 	android:theme
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:24:13-53
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:24:13-54
 	android:name
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:22:13-41
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:22:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:25:13-28:29
+ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:25:13-28:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:26:17-69
+ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:26:17-69
 	android:name
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:26:25-66
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:26:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:27:17-77
+ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:27:17-77
 	android:name
-		ADDED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml:27:27-74
+		ADDED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml:27:27-74
 uses-sdk
-INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
-INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml
-INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml
 MERGED from [io.coil-kt:coil-compose:2.5.0] C:\Users\hello\.gradle\caches\transforms-3\4846bb26930685f7829b61c57a984f7c\transformed\jetified-coil-compose-2.5.0\AndroidManifest.xml:5:5-44
 MERGED from [io.coil-kt:coil-compose:2.5.0] C:\Users\hello\.gradle\caches\transforms-3\4846bb26930685f7829b61c57a984f7c\transformed\jetified-coil-compose-2.5.0\AndroidManifest.xml:5:5-44
 MERGED from [io.coil-kt:coil-compose-base:2.5.0] C:\Users\hello\.gradle\caches\transforms-3\93bb95afc537558513949f296dc76dbf\transformed\jetified-coil-compose-base-2.5.0\AndroidManifest.xml:5:5-44
@@ -260,6 +261,8 @@ MERGED from [androidx.compose.runtime:runtime-saveable-android:1.5.4] C:\Users\h
 MERGED from [androidx.compose.runtime:runtime-saveable-android:1.5.4] C:\Users\hello\.gradle\caches\transforms-3\9c768c924ca2acb9f801b61eebce2dd5\transformed\jetified-runtime-saveable-release\AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.runtime:runtime-android:1.5.4] C:\Users\hello\.gradle\caches\transforms-3\b4062a51cf30b89988c8971d5e5d592c\transformed\jetified-runtime-release\AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.runtime:runtime-android:1.5.4] C:\Users\hello\.gradle\caches\transforms-3\b4062a51cf30b89988c8971d5e5d592c\transformed\jetified-runtime-release\AndroidManifest.xml:5:5-44
+MERGED from [androidx.core:core-splashscreen:1.0.1] C:\Users\hello\.gradle\caches\transforms-3\ffbc5fcf259bce4e28ea79c5334299c6\transformed\jetified-core-splashscreen-1.0.1\AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core-splashscreen:1.0.1] C:\Users\hello\.gradle\caches\transforms-3\ffbc5fcf259bce4e28ea79c5334299c6\transformed\jetified-core-splashscreen-1.0.1\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.annotation:annotation-experimental:1.3.0] C:\Users\hello\.gradle\caches\transforms-3\63bd3f0342e78a2f7ca0dae904199161\transformed\jetified-annotation-experimental-1.3.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.3.0] C:\Users\hello\.gradle\caches\transforms-3\63bd3f0342e78a2f7ca0dae904199161\transformed\jetified-annotation-experimental-1.3.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\hello\.gradle\caches\transforms-3\54e19ededdf485f17df3fdff51655f8f\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44
@@ -277,9 +280,9 @@ MERGED from [androidx.tracing:tracing:1.0.0] C:\Users\hello\.gradle\caches\trans
 MERGED from [androidx.exifinterface:exifinterface:1.3.6] C:\Users\hello\.gradle\caches\transforms-3\5c6475428a30cff8bc220190108b4b3f\transformed\exifinterface-1.3.6\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.exifinterface:exifinterface:1.3.6] C:\Users\hello\.gradle\caches\transforms-3\5c6475428a30cff8bc220190108b4b3f\transformed\exifinterface-1.3.6\AndroidManifest.xml:20:5-22:41
 	android:targetSdkVersion
-		INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml
 	android:minSdkVersion
-		INJECTED from C:\Users\hello\Desktop\Icon Creator\IconCreatorAndroid\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\hello\Desktop\Icon Creator\Icon-Creator\app\src\main\AndroidManifest.xml
 activity#androidx.activity.ComponentActivity
 ADDED from [androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\hello\.gradle\caches\transforms-3\7d1ea71fa3d697046132a98480066f21\transformed\jetified-ui-test-manifest-1.5.4\AndroidManifest.xml:23:9-25:39
 	android:exported

@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.IconCreator" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Use transparent to skip the system icon and show custom full-screen loading instead -->
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="windowSplashScreenBackground">#1A1A1A</item>
+        <item name="postSplashScreenTheme">@style/Theme.IconCreator</item>
+    </style>
 </resources>
