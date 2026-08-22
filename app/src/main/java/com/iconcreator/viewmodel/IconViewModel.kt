@@ -397,18 +397,14 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Save the current icon as PNG
      */
-    fun saveAsPNG(filename: String? = null) {
+    fun saveAsPNG() {
         viewModelScope.launch {
             val preview = _previewBitmap.value ?: return@launch
-            val name = filename ?: generateCustomFilename()
-            val result = imageSaver.saveAsPNG(preview, name)
-            if (result != null) {
-                updateUiState { 
-                    successMessage = "Saved as PNG: $result"
-                    lastSavedUri = result
-                }
-            } else {
-                updateUiState { errorMessage = "Failed to save PNG" }
+            val name = generateCustomFilename()
+            updateUiState { 
+                pendingSaveBitmap = preview
+                pendingSaveName = "$name.png"
+                pendingSaveMimeType = "image/png"
             }
         }
     }
@@ -416,19 +412,53 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Save the current icon as ICO
      */
-    fun saveAsICO(filename: String? = null) {
+    fun saveAsICO() {
         viewModelScope.launch {
             val preview = _previewBitmap.value ?: return@launch
-            val name = filename ?: generateCustomFilename()
-            val result = imageSaver.saveAsICO(preview, name)
-            if (result != null) {
+            val name = generateCustomFilename()
+            updateUiState { 
+                pendingSaveBitmap = preview
+                pendingSaveName = "$name.ico"
+                pendingSaveMimeType = "image/x-icon"
+            }
+        }
+    }
+    
+    /**
+     * Finalize saving to a specific URI (from system picker)
+     */
+    fun saveToUri(uri: android.net.Uri) {
+        val bitmap = _uiState.value.pendingSaveBitmap ?: return
+        val mimeType = _uiState.value.pendingSaveMimeType ?: return
+        
+        viewModelScope.launch {
+            val success = if (mimeType == "image/x-icon") {
+                imageSaver.saveIcoToUri(bitmap, uri)
+            } else {
+                imageSaver.saveBitmapToUri(bitmap, uri)
+            }
+            
+            if (success) {
                 updateUiState { 
-                    successMessage = "Saved as ICO: $result"
-                    lastSavedUri = result
+                    successMessage = "Saved successfully!"
+                    pendingSaveBitmap = null
+                    pendingSaveName = null
+                    pendingSaveMimeType = null
                 }
             } else {
-                updateUiState { errorMessage = "Failed to save ICO" }
+                updateUiState { errorMessage = "Failed to save file" }
             }
+        }
+    }
+    
+    /**
+     * Clear pending save if cancelled
+     */
+    fun clearPendingSave() {
+        updateUiState { 
+            pendingSaveBitmap = null
+            pendingSaveName = null
+            pendingSaveMimeType = null
         }
     }
     
@@ -544,5 +574,10 @@ data class IconUiState(
     var loadingProgress: Float = 0f,
     var errorMessage: String? = null,
     var successMessage: String? = null,
-    var lastSavedUri: String? = null
+    var lastSavedUri: String? = null,
+    
+    // Pending save data for "Save As" picker
+    var pendingSaveBitmap: Bitmap? = null,
+    var pendingSaveName: String? = null,
+    var pendingSaveMimeType: String? = null
 )

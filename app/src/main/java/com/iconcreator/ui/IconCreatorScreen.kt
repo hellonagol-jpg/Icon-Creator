@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.app.DownloadManager
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -75,48 +77,21 @@ fun IconCreatorScreen(
     uiState: IconUiState,
     previewBitmap: Bitmap?
 ) {
-    val context = LocalContext.current
-    
-    // Auto-open saved folder
-    androidx.compose.runtime.LaunchedEffect(uiState.lastSavedUri) {
-        uiState.lastSavedUri?.let { uriString ->
-            val isIco = uriString.endsWith(".ico", ignoreCase = true)
-            val subFolder = if (isIco) "%2Fico" else ""
-            val folderPath = "primary%3ADownload%2FIconCreator$subFolder"
-            
-            try {
-                // Try to open the specific folder in Downloads
-                val folderUri = Uri.parse("content://com.android.externalstorage.documents/document/$folderPath")
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(folderUri, "vnd.android.document/directory")
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                context.startActivity(intent)
-            } catch (e: Exception) {
-                // Fallback 1: Open the general downloads folder
-                try {
-                    val intent = Intent(DownloadManager.ACTION_VIEW_DOWNLOADS).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    context.startActivity(intent)
-                } catch (_: Exception) {
-                    // Fallback 2: Open the file itself
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                            data = Uri.parse(uriString)
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                        context.startActivity(intent)
-                    } catch (_2: Exception) {
-                        viewModel.updateUiState { 
-                            errorMessage = if (isIco) "Saved to Downloads/IconCreator/ico" else "Saved to Downloads/IconCreator" 
-                        }
-                    }
-                }
-            }
-            viewModel.clearLastSavedUri()
+    // Save File Picker
+    val saveLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("*/*")
+    ) { uri ->
+        if (uri != null) {
+            viewModel.saveToUri(uri)
+        } else {
+            viewModel.clearPendingSave()
+        }
+    }
+
+    // Trigger Save Picker when pending save is ready
+    androidx.compose.runtime.LaunchedEffect(uiState.pendingSaveName) {
+        uiState.pendingSaveName?.let { fileName ->
+            saveLauncher.launch(fileName)
         }
     }
 
