@@ -1,0 +1,18 @@
+# Built artifacts
+**/build/
+app/build/
+.gradle/
+
+# IDE files
+.idea/
+*.iml
+
+# Local configuration
+local.properties
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets
+google-services.json

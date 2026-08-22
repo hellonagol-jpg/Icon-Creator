@@ -77,29 +77,40 @@ fun IconCreatorScreen(
 ) {
     val context = LocalContext.current
     
-    // Auto-open Downloads folder
+    // Auto-open IconCreator folder
     androidx.compose.runtime.LaunchedEffect(uiState.lastSavedUri) {
         uiState.lastSavedUri?.let { uriString ->
             try {
-                val intent = Intent(DownloadManager.ACTION_VIEW_DOWNLOADS).apply {
+                // Try to open the specific IconCreator folder in Downloads
+                val folderUri = Uri.parse("content://com.android.externalstorage.documents/document/primary%3ADownload%2FIconCreator")
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(folderUri, "vnd.android.document/directory")
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
                 context.startActivity(intent)
-                viewModel.clearLastSavedUri()
             } catch (e: Exception) {
-                // Fallback to viewing the file directly if the downloads manager isn't available
+                // Fallback 1: Open the general downloads folder
                 try {
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse(uriString)
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    val intent = Intent(DownloadManager.ACTION_VIEW_DOWNLOADS).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     context.startActivity(intent)
                 } catch (_: Exception) {
-                    viewModel.updateUiState { errorMessage = "Saved to Downloads/IconCreator" }
+                    // Fallback 2: Open the file itself
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse(uriString)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                        viewModel.updateUiState { errorMessage = "Saved to Downloads/IconCreator" }
+                    }
                 }
-                viewModel.clearLastSavedUri()
             }
+            viewModel.clearLastSavedUri()
         }
     }
 

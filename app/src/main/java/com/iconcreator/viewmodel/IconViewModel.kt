@@ -15,6 +15,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * ViewModel for managing icon creator state and business logic
@@ -397,7 +400,8 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
     fun saveAsPNG(filename: String? = null) {
         viewModelScope.launch {
             val preview = _previewBitmap.value ?: return@launch
-            val result = imageSaver.saveAsPNG(preview, filename)
+            val name = filename ?: generateCustomFilename()
+            val result = imageSaver.saveAsPNG(preview, name)
             if (result != null) {
                 updateUiState { 
                     successMessage = "Saved as PNG: $result"
@@ -415,7 +419,8 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
     fun saveAsICO(filename: String? = null) {
         viewModelScope.launch {
             val preview = _previewBitmap.value ?: return@launch
-            val result = imageSaver.saveAsICO(preview, filename)
+            val name = filename ?: generateCustomFilename()
+            val result = imageSaver.saveAsICO(preview, name)
             if (result != null) {
                 updateUiState { 
                     successMessage = "Saved as ICO: $result"
@@ -425,6 +430,17 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
                 updateUiState { errorMessage = "Failed to save ICO" }
             }
         }
+    }
+    
+    /**
+     * Generate a filename based on text lines and date
+     */
+    private fun generateCustomFilename(): String {
+        val lines = _settings.value.titleLines.filter { it.isNotBlank() }
+        val sentence = lines.joinToString("_") { it.trim().replace(Regex("[^a-zA-Z0-9]"), "") }
+        val dateFormat = SimpleDateFormat("MMdd", Locale.getDefault())
+        val dateSuffix = dateFormat.format(Date())
+        return if (sentence.isNotEmpty()) "${sentence}_$dateSuffix" else "icon_$dateSuffix"
     }
     
     /**
