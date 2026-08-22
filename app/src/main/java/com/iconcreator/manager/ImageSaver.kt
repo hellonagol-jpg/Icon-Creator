@@ -2,7 +2,6 @@ package com.iconcreator.manager
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.os.Build
 import android.provider.MediaStore
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +21,7 @@ import java.util.Locale
 class ImageSaver(private val context: Context) {
     
     /**
-     * Save a bitmap as PNG to the Pictures directory
+     * Save a bitmap as PNG to the Downloads directory
      */
     suspend fun saveAsPNG(bitmap: Bitmap, filename: String? = null): String? = withContext(Dispatchers.IO) {
         try {
@@ -30,13 +29,13 @@ class ImageSaver(private val context: Context) {
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val contentValues = android.content.ContentValues().apply {
-                    put(MediaStore.Images.Media.DISPLAY_NAME, "$displayName.png")
-                    put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                    put(MediaStore.Images.Media.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/IconCreator")
+                    put(MediaStore.Downloads.DISPLAY_NAME, "$displayName.png")
+                    put(MediaStore.Downloads.MIME_TYPE, "image/png")
+                    put(MediaStore.Downloads.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/IconCreator")
                 }
                 
                 val uri = context.contentResolver.insert(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI,
                     contentValues
                 )
                 
@@ -48,10 +47,10 @@ class ImageSaver(private val context: Context) {
                 }
             } else {
                 // For older Android versions
-                val picturesDir = android.os.Environment.getExternalStoragePublicDirectory(
-                    android.os.Environment.DIRECTORY_PICTURES
+                val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
+                    android.os.Environment.DIRECTORY_DOWNLOADS
                 )
-                val appDir = File(picturesDir, "IconCreator")
+                val appDir = File(downloadsDir, "IconCreator")
                 if (!appDir.exists()) {
                     appDir.mkdirs()
                 }
@@ -66,7 +65,7 @@ class ImageSaver(private val context: Context) {
                     android.content.Intent(android.content.Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, android.net.Uri.fromFile(file))
                 )
                 
-                return@withContext file.absolutePath
+                return@withContext android.net.Uri.fromFile(file).toString()
             }
             
             null
@@ -136,13 +135,13 @@ class ImageSaver(private val context: Context) {
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val contentValues = android.content.ContentValues().apply {
-                    put(MediaStore.Images.Media.DISPLAY_NAME, "$displayName.ico")
-                    put(MediaStore.Images.Media.MIME_TYPE, "image/x-icon")
-                    put(MediaStore.Images.Media.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/IconCreator")
+                    put(MediaStore.Downloads.DISPLAY_NAME, "$displayName.ico")
+                    put(MediaStore.Downloads.MIME_TYPE, "image/x-icon")
+                    put(MediaStore.Downloads.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/IconCreator")
                 }
                 
                 val uri = context.contentResolver.insert(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI,
                     contentValues
                 )
                 
@@ -153,10 +152,10 @@ class ImageSaver(private val context: Context) {
                     return@withContext it.toString()
                 }
             } else {
-                val picturesDir = android.os.Environment.getExternalStoragePublicDirectory(
-                    android.os.Environment.DIRECTORY_PICTURES
+                val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
+                    android.os.Environment.DIRECTORY_DOWNLOADS
                 )
-                val appDir = File(picturesDir, "IconCreator")
+                val appDir = File(downloadsDir, "IconCreator")
                 if (!appDir.exists()) appDir.mkdirs()
                 
                 val file = File(appDir, "$displayName.ico")
@@ -168,7 +167,7 @@ class ImageSaver(private val context: Context) {
                     android.content.Intent(android.content.Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, android.net.Uri.fromFile(file))
                 )
                 
-                return@withContext file.absolutePath
+                return@withContext android.net.Uri.fromFile(file).toString()
             }
             
             null

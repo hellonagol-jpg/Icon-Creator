@@ -1,6 +1,7 @@
 package com.iconcreator.ui
 
 import android.graphics.Bitmap
+import android.app.DownloadManager
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
@@ -76,19 +77,27 @@ fun IconCreatorScreen(
 ) {
     val context = LocalContext.current
     
-    // Auto-open saved file
+    // Auto-open Downloads folder
     androidx.compose.runtime.LaunchedEffect(uiState.lastSavedUri) {
         uiState.lastSavedUri?.let { uriString ->
             try {
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    data = Uri.parse(uriString)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                val intent = Intent(DownloadManager.ACTION_VIEW_DOWNLOADS).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 context.startActivity(intent)
                 viewModel.clearLastSavedUri()
             } catch (e: Exception) {
-                viewModel.updateUiState { errorMessage = "Saved to Gallery. Could not open automatically: $uriString" }
+                // Fallback to viewing the file directly if the downloads manager isn't available
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        data = Uri.parse(uriString)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(intent)
+                } catch (_: Exception) {
+                    viewModel.updateUiState { errorMessage = "Saved to Downloads/IconCreator" }
+                }
                 viewModel.clearLastSavedUri()
             }
         }
@@ -598,6 +607,9 @@ fun SectionHeader(text: String, color: Color, isExpanded: Boolean, onClick: () -
 
 @Composable
 fun ImageSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
+    val navL by viewModel.navL.collectAsState()
+    val navR by viewModel.navR.collectAsState()
+    
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -606,55 +618,68 @@ fun ImageSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "Brightness",
             value = settings.brightness,
             valueRange = 0.1f..2.0f,
-            onValueChange = { viewModel.updateSetting { brightness = it } }
+            onValueChange = { viewModel.updateSetting { brightness = it } },
+            navL = navL, navR = navR
         )
         
         SliderWithLabel(
             label = "Opacity",
             value = settings.imageAlpha,
             valueRange = 0.0f..1.0f,
-            onValueChange = { viewModel.updateSetting { imageAlpha = it } }
+            onValueChange = { viewModel.updateSetting { imageAlpha = it } },
+            navL = navL, navR = navR
         )
         
         SliderWithLabel(
             label = "Zoom",
             value = settings.zoomLevel.toFloat(),
             valueRange = -100f..200f,
-            onValueChange = { viewModel.updateSetting { zoomLevel = it.toInt() } }
+            onValueChange = { viewModel.updateSetting { zoomLevel = it.toInt() } },
+            navL = navL, navR = navR,
+            step = 1f
         )
         
         SliderWithLabel(
             label = "X Offset",
             value = settings.offsetX.toFloat(),
             valueRange = -140f..140f,
-            onValueChange = { viewModel.updateSetting { offsetX = it.toInt() } }
+            onValueChange = { viewModel.updateSetting { offsetX = it.toInt() } },
+            navL = navL, navR = navR,
+            step = 1f
         )
         
         SliderWithLabel(
             label = "Y Offset",
             value = settings.offsetY.toFloat(),
             valueRange = -140f..140f,
-            onValueChange = { viewModel.updateSetting { offsetY = it.toInt() } }
+            onValueChange = { viewModel.updateSetting { offsetY = it.toInt() } },
+            navL = navL, navR = navR,
+            step = 1f
         )
         
         SliderWithLabel(
             label = "Stretch X",
             value = settings.stretchX,
             valueRange = 0.1f..5.0f,
-            onValueChange = { viewModel.updateSetting { stretchX = it } }
+            onValueChange = { viewModel.updateSetting { stretchX = it } },
+            navL = navL, navR = navR
         )
         
         SliderWithLabel(
             label = "Stretch Y",
             value = settings.stretchY,
             valueRange = 0.1f..5.0f,
-            onValueChange = { viewModel.updateSetting { stretchY = it } }
+            onValueChange = { viewModel.updateSetting { stretchY = it } },
+            navL = navL, navR = navR
         )
     }
 }
 
 @Composable
 fun BackgroundSection(viewModel: IconViewModel, settings: IconSettings) {
+    val navL by viewModel.navL.collectAsState()
+    val navR by viewModel.navR.collectAsState()
+    
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -664,8 +689,8 @@ fun BackgroundSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "Background",
             currentIndex = settings.currentBgIndex,
             totalCount = viewModel.backgrounds.collectAsState().value.size,
-            navL = viewModel.navL.collectAsState().value,
-            navR = viewModel.navR.collectAsState().value,
+            navL = navL,
+            navR = navR,
             onNext = { viewModel.nextBackground() },
             onPrev = { viewModel.prevBackground() }
         )
@@ -674,35 +699,42 @@ fun BackgroundSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "BG Brightness",
             value = settings.bgBrightness,
             valueRange = 0.2f..2.0f,
-            onValueChange = { viewModel.updateSetting { bgBrightness = it } }
+            onValueChange = { viewModel.updateSetting { bgBrightness = it } },
+            navL = navL, navR = navR
         )
         
         SliderWithLabel(
             label = "BG Hue",
             value = settings.bgHue,
             valueRange = 0f..360f,
-            onValueChange = { viewModel.updateSetting { bgHue = it } }
+            onValueChange = { viewModel.updateSetting { bgHue = it } },
+            navL = navL, navR = navR
         )
         
         SliderWithLabel(
             label = "BG Scale",
             value = settings.bgScale,
             valueRange = 0.5f..2.0f,
-            onValueChange = { viewModel.updateSetting { bgScale = it } }
+            onValueChange = { viewModel.updateSetting { bgScale = it } },
+            navL = navL, navR = navR
         )
         
         SliderWithLabel(
             label = "BG Offset X",
             value = settings.bgOffsetX.toFloat(),
             valueRange = -100f..100f,
-            onValueChange = { viewModel.updateSetting { bgOffsetX = it.toInt() } }
+            onValueChange = { viewModel.updateSetting { bgOffsetX = it.toInt() } },
+            navL = navL, navR = navR,
+            step = 1f
         )
         
         SliderWithLabel(
             label = "BG Offset Y",
             value = settings.bgOffsetY.toFloat(),
             valueRange = -100f..100f,
-            onValueChange = { viewModel.updateSetting { bgOffsetY = it.toInt() } }
+            onValueChange = { viewModel.updateSetting { bgOffsetY = it.toInt() } },
+            navL = navL, navR = navR,
+            step = 1f
         )
         
         // Border navigation
@@ -710,8 +742,8 @@ fun BackgroundSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "Border",
             currentIndex = settings.currentFrameIndex,
             totalCount = viewModel.borders.collectAsState().value.size,
-            navL = viewModel.navL.collectAsState().value,
-            navR = viewModel.navR.collectAsState().value,
+            navL = navL,
+            navR = navR,
             onNext = { viewModel.nextBorder() },
             onPrev = { viewModel.prevBorder() }
         )
@@ -720,21 +752,25 @@ fun BackgroundSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "Border Hue",
             value = settings.borderHue,
             valueRange = 0f..360f,
-            onValueChange = { viewModel.updateSetting { borderHue = it } }
+            onValueChange = { viewModel.updateSetting { borderHue = it } },
+            navL = navL, navR = navR
         )
         
         SliderWithLabel(
             label = "Border Alpha",
             value = settings.borderAlpha,
             valueRange = 0f..1f,
-            onValueChange = { viewModel.updateSetting { borderAlpha = it } }
+            onValueChange = { viewModel.updateSetting { borderAlpha = it } },
+            navL = navL, navR = navR
         )
         
         SliderWithLabel(
             label = "Shadow Opacity",
             value = settings.shadowOpacity.toFloat(),
             valueRange = 0f..100f,
-            onValueChange = { viewModel.updateSetting { shadowOpacity = it.toInt() } }
+            onValueChange = { viewModel.updateSetting { shadowOpacity = it.toInt() } },
+            navL = navL, navR = navR,
+            step = 1f
         )
     }
 }
@@ -742,6 +778,8 @@ fun BackgroundSection(viewModel: IconViewModel, settings: IconSettings) {
 @Composable
 fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
     var showFontSelector by remember { androidx.compose.runtime.mutableStateOf(false) }
+    val navL by viewModel.navL.collectAsState()
+    val navR by viewModel.navR.collectAsState()
     
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -758,8 +796,8 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
                     label = "Font",
                     currentIndex = settings.currentFontIndex,
                     totalCount = viewModel.fonts.collectAsState().value.size,
-                    navL = viewModel.navL.collectAsState().value,
-                    navR = viewModel.navR.collectAsState().value,
+                    navL = navL,
+                    navR = navR,
                     onNext = { viewModel.nextFont() },
                     onPrev = { viewModel.prevFont() }
                 )
@@ -802,7 +840,8 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
                         if (lineActive.getOrElse(index) { false }) hue else oldHue 
                     }
                 } 
-            }
+            },
+            navL = navL, navR = navR
         )
         
         // Font size
@@ -823,7 +862,9 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
                         indices.forEach { if (lineActive.getOrElse(it) { false }) set(it, offset.toInt()) }
                     }
                 }
-            }
+            },
+            navL = navL, navR = navR,
+            step = 1f
         )
         
         // Letter spacing
@@ -837,7 +878,8 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
                         indices.forEach { if (lineActive.getOrElse(it) { false }) set(it, spacing) }
                     }
                 }
-            }
+            },
+            navL = navL, navR = navR
         )
         
         // Line spacing
@@ -845,7 +887,9 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
             label = "Line Spacing: ${settings.lineSpacingOffset}px",
             value = settings.lineSpacingOffset.toFloat(),
             valueRange = -30f..30f,
-            onValueChange = { viewModel.updateSetting { lineSpacingOffset = it.toInt() } }
+            onValueChange = { viewModel.updateSetting { lineSpacingOffset = it.toInt() } },
+            navL = navL, navR = navR,
+            step = 1f
         )
         
         // Text position X
@@ -859,7 +903,9 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
                         indices.forEach { if (lineActive.getOrElse(it) { false }) set(it, offset.toInt()) }
                     }
                 }
-            }
+            },
+            navL = navL, navR = navR,
+            step = 1f
         )
         
         // Text position Y
@@ -873,7 +919,9 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
                         indices.forEach { if (lineActive.getOrElse(it) { false }) set(it, offset.toInt()) }
                     }
                 }
-            }
+            },
+            navL = navL, navR = navR,
+            step = 1f
         )
         
         // Glow parameters (Visible only if at least one line has glow enabled)
@@ -885,14 +933,17 @@ fun TextSettingsSection(viewModel: IconViewModel, settings: IconSettings) {
                 label = "Glow Strength",
                 value = settings.glowStrength,
                 valueRange = 0f..2f,
-                onValueChange = { viewModel.updateSetting { glowStrength = it } }
+                onValueChange = { viewModel.updateSetting { glowStrength = it } },
+                navL = navL, navR = navR
             )
             
             SliderWithLabel(
                 label = "Glow Size",
                 value = settings.glowSize.toFloat(),
                 valueRange = 1f..10f,
-                onValueChange = { viewModel.updateSetting { glowSize = it.toInt() } }
+                onValueChange = { viewModel.updateSetting { glowSize = it.toInt() } },
+                navL = navL, navR = navR,
+                step = 1f
             )
         }
     }
@@ -1071,6 +1122,9 @@ fun IconToggle(
 
 @Composable
 fun CRTSection(viewModel: IconViewModel, settings: IconSettings) {
+    val navL by viewModel.navL.collectAsState()
+    val navR by viewModel.navR.collectAsState()
+    
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -1086,7 +1140,9 @@ fun CRTSection(viewModel: IconViewModel, settings: IconSettings) {
                 label = "Scanline Opacity",
                 value = settings.scanlineAlpha.toFloat(),
                 valueRange = 0f..100f,
-                onValueChange = { viewModel.updateSetting { scanlineAlpha = it.toInt() } }
+                onValueChange = { viewModel.updateSetting { scanlineAlpha = it.toInt() } },
+                navL = navL, navR = navR,
+                step = 1f
             )
         }
     }
@@ -1094,6 +1150,9 @@ fun CRTSection(viewModel: IconViewModel, settings: IconSettings) {
 
 @Composable
 fun DecorationSection(viewModel: IconViewModel, settings: IconSettings) {
+    val navL by viewModel.navL.collectAsState()
+    val navR by viewModel.navR.collectAsState()
+    
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -1109,8 +1168,8 @@ fun DecorationSection(viewModel: IconViewModel, settings: IconSettings) {
                 label = "Decor",
                 currentIndex = settings.currentDecorIndex,
                 totalCount = viewModel.decorations.collectAsState().value.size,
-                navL = viewModel.navL.collectAsState().value,
-                navR = viewModel.navR.collectAsState().value,
+                navL = navL,
+                navR = navR,
                 onNext = { viewModel.nextDecor() },
                 onPrev = { viewModel.prevDecor() }
             )
@@ -1119,21 +1178,26 @@ fun DecorationSection(viewModel: IconViewModel, settings: IconSettings) {
                 label = "Decor Scale",
                 value = settings.decorScale,
                 valueRange = 0.5f..2.0f,
-                onValueChange = { viewModel.updateSetting { decorScale = it } }
+                onValueChange = { viewModel.updateSetting { decorScale = it } },
+                navL = navL, navR = navR
             )
             
             SliderWithLabel(
                 label = "Decor Offset X",
                 value = settings.decorOffsetX.toFloat(),
                 valueRange = -30f..30f,
-                onValueChange = { viewModel.updateSetting { decorOffsetX = it.toInt() } }
+                onValueChange = { viewModel.updateSetting { decorOffsetX = it.toInt() } },
+                navL = navL, navR = navR,
+                step = 1f
             )
             
             SliderWithLabel(
                 label = "Decor Offset Y",
                 value = settings.decorOffsetY.toFloat(),
                 valueRange = -30f..30f,
-                onValueChange = { viewModel.updateSetting { decorOffsetY = it.toInt() } }
+                onValueChange = { viewModel.updateSetting { decorOffsetY = it.toInt() } },
+                navL = navL, navR = navR,
+                step = 1f
             )
         }
     }
@@ -1167,7 +1231,10 @@ fun SliderWithLabel(
     label: String,
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
-    onValueChange: (Float) -> Unit
+    onValueChange: (Float) -> Unit,
+    navL: Bitmap? = null,
+    navR: Bitmap? = null,
+    step: Float = 0.1f
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -1175,12 +1242,58 @@ fun SliderWithLabel(
             style = MaterialTheme.typography.bodySmall,
             color = Color.White
         )
-        Slider(
-            value = value,
-            valueRange = valueRange,
-            onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            RepeatingIconButton(
+                onClick = { onValueChange((value - step).coerceIn(valueRange.start, valueRange.endInclusive)) },
+                modifier = Modifier.size(32.dp)
+            ) {
+                if (navL != null) {
+                    Image(
+                        bitmap = navL.asImageBitmap(),
+                        contentDescription = "Decrease",
+                        modifier = Modifier.size(20.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Decrease",
+                        tint = Color(0xFF3498DB),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            
+            Slider(
+                value = value,
+                valueRange = valueRange,
+                onValueChange = onValueChange,
+                modifier = Modifier.weight(1f)
+            )
+
+            RepeatingIconButton(
+                onClick = { onValueChange((value + step).coerceIn(valueRange.start, valueRange.endInclusive)) },
+                modifier = Modifier.size(32.dp)
+            ) {
+                if (navR != null) {
+                    Image(
+                        bitmap = navR.asImageBitmap(),
+                        contentDescription = "Increase",
+                        modifier = Modifier.size(20.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = "Increase",
+                        tint = Color(0xFF3498DB),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
