@@ -1,6 +1,8 @@
 package com.iconcreator.ui
 
 import android.graphics.Bitmap
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -72,6 +74,26 @@ fun IconCreatorScreen(
     uiState: IconUiState,
     previewBitmap: Bitmap?
 ) {
+    val context = LocalContext.current
+    
+    // Auto-open saved file
+    androidx.compose.runtime.LaunchedEffect(uiState.lastSavedUri) {
+        uiState.lastSavedUri?.let { uriString ->
+            try {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    data = Uri.parse(uriString)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+                viewModel.clearLastSavedUri()
+            } catch (e: Exception) {
+                viewModel.updateUiState { errorMessage = "Saved to Gallery. Could not open automatically: $uriString" }
+                viewModel.clearLastSavedUri()
+            }
+        }
+    }
+
     if (uiState.isLoading) {
         LoadingScreen(uiState.loadingProgress)
         return

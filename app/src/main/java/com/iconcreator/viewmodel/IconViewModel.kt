@@ -399,7 +399,10 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
             val preview = _previewBitmap.value ?: return@launch
             val result = imageSaver.saveAsPNG(preview, filename)
             if (result != null) {
-                updateUiState { successMessage = "Saved as PNG: $result" }
+                updateUiState { 
+                    successMessage = "Saved as PNG: $result"
+                    lastSavedUri = result
+                }
             } else {
                 updateUiState { errorMessage = "Failed to save PNG" }
             }
@@ -414,7 +417,10 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
             val preview = _previewBitmap.value ?: return@launch
             val result = imageSaver.saveAsICO(preview, filename)
             if (result != null) {
-                updateUiState { successMessage = "Saved as ICO: $result" }
+                updateUiState { 
+                    successMessage = "Saved as ICO: $result"
+                    lastSavedUri = result
+                }
             } else {
                 updateUiState { errorMessage = "Failed to save ICO" }
             }
@@ -505,6 +511,13 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+    
+    /**
+     * Clear the last saved URI after it has been handled by the UI
+     */
+    fun clearLastSavedUri() {
+        updateUiState { lastSavedUri = null }
+    }
 }
 
 /**
@@ -514,5 +527,6 @@ data class IconUiState(
     var isLoading: Boolean = true,
     var loadingProgress: Float = 0f,
     var errorMessage: String? = null,
-    var successMessage: String? = null
+    var successMessage: String? = null,
+    var lastSavedUri: String? = null
 )
