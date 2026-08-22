@@ -77,12 +77,16 @@ fun IconCreatorScreen(
 ) {
     val context = LocalContext.current
     
-    // Auto-open IconCreator folder
+    // Auto-open saved folder
     androidx.compose.runtime.LaunchedEffect(uiState.lastSavedUri) {
         uiState.lastSavedUri?.let { uriString ->
+            val isIco = uriString.endsWith(".ico", ignoreCase = true)
+            val subFolder = if (isIco) "%2Fico" else ""
+            val folderPath = "primary%3ADownload%2FIconCreator$subFolder"
+            
             try {
-                // Try to open the specific IconCreator folder in Downloads
-                val folderUri = Uri.parse("content://com.android.externalstorage.documents/document/primary%3ADownload%2FIconCreator")
+                // Try to open the specific folder in Downloads
+                val folderUri = Uri.parse("content://com.android.externalstorage.documents/document/$folderPath")
                 val intent = Intent(Intent.ACTION_VIEW).apply {
                     setDataAndType(folderUri, "vnd.android.document/directory")
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -105,8 +109,10 @@ fun IconCreatorScreen(
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
                         context.startActivity(intent)
-                    } catch (_: Exception) {
-                        viewModel.updateUiState { errorMessage = "Saved to Downloads/IconCreator" }
+                    } catch (_2: Exception) {
+                        viewModel.updateUiState { 
+                            errorMessage = if (isIco) "Saved to Downloads/IconCreator/ico" else "Saved to Downloads/IconCreator" 
+                        }
                     }
                 }
             }

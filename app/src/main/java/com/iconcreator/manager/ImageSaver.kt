@@ -137,7 +137,7 @@ class ImageSaver(private val context: Context) {
                 val contentValues = android.content.ContentValues().apply {
                     put(MediaStore.Downloads.DISPLAY_NAME, "$displayName.ico")
                     put(MediaStore.Downloads.MIME_TYPE, "image/x-icon")
-                    put(MediaStore.Downloads.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/IconCreator")
+                    put(MediaStore.Downloads.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/IconCreator/ico")
                 }
                 
                 val uri = context.contentResolver.insert(
@@ -155,7 +155,7 @@ class ImageSaver(private val context: Context) {
                 val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
                     android.os.Environment.DIRECTORY_DOWNLOADS
                 )
-                val appDir = File(downloadsDir, "IconCreator")
+                val appDir = File(downloadsDir, "IconCreator/ico")
                 if (!appDir.exists()) appDir.mkdirs()
                 
                 val file = File(appDir, "$displayName.ico")
