@@ -88,6 +88,15 @@ fun IconCreatorScreen(
         }
     }
 
+    // Import File Picker
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            viewModel.importTemplate(uri)
+        }
+    }
+
     // Trigger Save Picker when pending save is ready
     androidx.compose.runtime.LaunchedEffect(uiState.pendingSaveName) {
         uiState.pendingSaveName?.let { fileName ->
@@ -137,7 +146,10 @@ fun IconCreatorScreen(
                         ) {
                             PreviewBox(previewBitmap = previewBitmap)
                             Spacer(modifier = Modifier.height(16.dp))
-                            ActionButtons(viewModel)
+                            ActionButtons(
+                                viewModel = viewModel,
+                                onImportTemplate = { importLauncher.launch(arrayOf("*/*")) }
+                            )
                         }
                         
                         // Vertical Separator
@@ -188,7 +200,10 @@ fun IconCreatorScreen(
                                 .padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            ActionButtons(viewModel)
+                            ActionButtons(
+                                viewModel = viewModel,
+                                onImportTemplate = { importLauncher.launch(arrayOf("*/*")) }
+                            )
                             
                             RightPanel(
                                 viewModel = viewModel,
@@ -239,7 +254,10 @@ fun PreviewBox(
 }
 
 @Composable
-fun ActionButtons(viewModel: IconViewModel) {
+fun ActionButtons(
+    viewModel: IconViewModel,
+    onImportTemplate: () -> Unit
+) {
     val imagePicker = rememberImagePicker(viewModel)
     var showSaveDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
     var showTemplateDialog by remember { androidx.compose.runtime.mutableStateOf(false) }
@@ -248,6 +266,7 @@ fun ActionButtons(viewModel: IconViewModel) {
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // ... (rest of the grid remains same)
         // 2x2 Grid for main actions
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -328,6 +347,7 @@ fun ActionButtons(viewModel: IconViewModel) {
     if (showTemplateDialog) {
         TemplateDialog(
             viewModel = viewModel,
+            onImport = onImportTemplate,
             onDismiss = { showTemplateDialog = false }
         )
     }
@@ -370,6 +390,7 @@ fun SaveDialog(
 @Composable
 fun TemplateDialog(
     viewModel: IconViewModel,
+    onImport: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val templates by viewModel.templates.collectAsState()
@@ -418,11 +439,24 @@ fun TemplateDialog(
                         .height(400.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Button(
-                        onClick = { showSaveTemplate = true },
-                        modifier = Modifier.fillMaxWidth()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Save New Template")
+                        Button(
+                            onClick = { showSaveTemplate = true },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Save New", style = MaterialTheme.typography.bodySmall)
+                        }
+                        
+                        Button(
+                            onClick = onImport,
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9B59B6))
+                        ) {
+                            Text("Import Icon", style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                     
                     if (templates.isEmpty()) {
@@ -443,7 +477,7 @@ fun TemplateDialog(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    // Small Preview
+                                    // Small Preview ...
                                     Box(
                                         modifier = Modifier
                                             .size(64.dp)
@@ -475,6 +509,18 @@ fun TemplateDialog(
                                         ) {
                                             Text("Load", style = MaterialTheme.typography.bodySmall)
                                         }
+                                        
+                                        Button(
+                                            onClick = {
+                                                viewModel.exportTemplate(template.name)
+                                            },
+                                            modifier = Modifier.height(32.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF39C12)),
+                                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp)
+                                        ) {
+                                            Text("Export", style = MaterialTheme.typography.bodySmall)
+                                        }
+
                                         Button(
                                             onClick = {
                                                 viewModel.deleteTemplate(template.name)

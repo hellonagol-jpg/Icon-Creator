@@ -428,20 +428,48 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
      * Finalize saving to a specific URI (from system picker)
      */
     fun saveToUri(uri: android.net.Uri) {
-        val bitmap = _uiState.value.pendingSaveBitmap ?: return
+        val bitmap = _uiState.value.pendingSaveBitmap
+        val text = _uiState.value.pendingTemplateText
+        val templateToBundle = _uiState.value.pendingTemplateToBundle
         val mimeType = _uiState.value.pendingSaveMimeType ?: return
         
         viewModelScope.launch {
-            val success = if (mimeType == "image/x-icon") {
-                imageSaver.saveIcoToUri(bitmap, uri)
-            } else {
-                imageSaver.saveBitmapToUri(bitmap, uri)
+            val success = when {
+                templateToBundle != null -> {
+                    try {
+                        getApplication<Application>().contentResolver.openOutputStream(uri)?.use {
+                            templateManager.exportTemplateBundle(templateToBundle, it)
+                        } ?: false
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+                text != null -> {
+                    try {
+                        getApplication<Application>().contentResolver.openOutputStream(uri)?.use {
+                            it.write(text.toByteArray())
+                        }
+                        true
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+                bitmap != null -> {
+                    if (mimeType == "image/x-icon") {
+                        imageSaver.saveIcoToUri(bitmap, uri)
+                    } else {
+                        imageSaver.saveBitmapToUri(bitmap, uri)
+                    }
+                }
+                else -> false
             }
             
             if (success) {
                 updateUiState { 
                     successMessage = "Saved successfully!"
                     pendingSaveBitmap = null
+                    pendingTemplateText = null
+                    pendingTemplateToBundle = null
                     pendingSaveName = null
                     pendingSaveMimeType = null
                 }
@@ -457,6 +485,8 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
     fun clearPendingSave() {
         updateUiState { 
             pendingSaveBitmap = null
+            pendingTemplateText = null
+            pendingTemplateToBundle = null
             pendingSaveName = null
             pendingSaveMimeType = null
         }
@@ -557,6 +587,54 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    /**
+     * Export a template to a ZIP bundle (.icontemplate)
+     */
+    fun exportTemplate(templateName: String) {
+        viewModelScope.launch {
+            updateUiState {
+                pendingTemplateToBundle = templateName
+                pendingSaveName = "${templateName.replace(" ", "_")}.icontemplate"
+                pendingSaveMimeType = "application/zip"
+            }
+        }
+    }
+
+    /**
+     * Import a template from a ZIP bundle URI
+     */
+    fun importTemplate(uri: android.net.Uri) {
+        viewModelScope.launch {
+            try {
+                val contentResolver = getApplication<Application>().contentResolver
+                // Get filename from URI to use as template name
+                var name = "ImportedTemplate"
+                contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                        if (nameIndex != -1) {
+                            name = cursor.getString(nameIndex).substringBeforeLast(".")
+                        }
+                    }
+                }
+
+                contentResolver.openInputStream(uri)?.use { inputStream ->
+                    val success = templateManager.importTemplateBundle(inputStream, name)
+                    if (success) {
+                        loadTemplates()
+                        updateUiState { successMessage = "Template '$name' imported successfully" }
+                    } else {
+                        updateUiState { errorMessage = "Failed to import template: Invalid bundle format" }
+                    }
+                } ?: run {
+                    updateUiState { errorMessage = "Could not open template file" }
+                }
+            } catch (e: Exception) {
+                updateUiState { errorMessage = "Error importing template: ${e.message}" }
+            }
+        }
+    }
     
     /**
      * Clear the last saved URI after it has been handled by the UI
@@ -578,6 +656,8 @@ data class IconUiState(
     
     // Pending save data for "Save As" picker
     var pendingSaveBitmap: Bitmap? = null,
+    var pendingTemplateText: String? = null,
+    var pendingTemplateToBundle: String? = null,
     var pendingSaveName: String? = null,
     var pendingSaveMimeType: String? = null
 )
