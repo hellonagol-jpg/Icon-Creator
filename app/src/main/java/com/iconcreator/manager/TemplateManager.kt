@@ -316,6 +316,10 @@ class TemplateManager(private val context: Context) {
         add("decorOffsetX", settings.decorOffsetX)
         add("decorOffsetY", settings.decorOffsetY)
         add("shadowOpacity", settings.shadowOpacity)
+        add("glitchEnabled", settings.glitchEnabled)
+        add("chromaticAberration", settings.chromaticAberration)
+        add("noiseOpacity", settings.noiseOpacity)
+        add("glitchDisplacement", settings.glitchDisplacement)
         
         return sb.toString()
     }
@@ -375,7 +379,11 @@ class TemplateManager(private val context: Context) {
             decorScale = getFloat("decorScale", 1.0f),
             decorOffsetX = getInt("decorOffsetX", 0),
             decorOffsetY = getInt("decorOffsetY", 0),
-            shadowOpacity = getInt("shadowOpacity", 100)
+            shadowOpacity = getInt("shadowOpacity", 100),
+            glitchEnabled = getBool("glitchEnabled", false),
+            chromaticAberration = getFloat("chromaticAberration", 0f),
+            noiseOpacity = getInt("noiseOpacity", 0),
+            glitchDisplacement = getFloat("glitchDisplacement", 0f)
         )
     }
 
@@ -454,6 +462,12 @@ class TemplateManager(private val context: Context) {
         
         // Shadow settings
         json.put("shadowOpacity", settings.shadowOpacity)
+        
+        // Glitch settings
+        json.put("glitchEnabled", settings.glitchEnabled)
+        json.put("chromaticAberration", settings.chromaticAberration)
+        json.put("noiseOpacity", settings.noiseOpacity)
+        json.put("glitchDisplacement", settings.glitchDisplacement)
         
         return json.toString(2)
     }
@@ -540,7 +554,12 @@ class TemplateManager(private val context: Context) {
             decorOffsetX = json.optInt("decorOffsetX", 0),
             decorOffsetY = json.optInt("decorOffsetY", 0),
             
-            shadowOpacity = json.optInt("shadowOpacity", 100)
+            shadowOpacity = json.optInt("shadowOpacity", 100),
+            
+            glitchEnabled = json.optBoolean("glitchEnabled", false),
+            chromaticAberration = json.optDouble("chromaticAberration", 0.0).toFloat(),
+            noiseOpacity = json.optInt("noiseOpacity", 0),
+            glitchDisplacement = json.optDouble("glitchDisplacement", 0.0).toFloat()
         )
     }
     

@@ -279,6 +279,16 @@ class IconViewModel(application: Application) : AndroidViewModel(application) {
                 currentDecorIndex = decorations.indices.random()
                 _decorImage.value = decorations[currentDecorIndex]
             }
+            
+            // Random glitch effects
+            if ((0..10).random() > 7) {
+                glitchEnabled = true
+                chromaticAberration = (0..10).random().toFloat()
+                noiseOpacity = (0..50).random()
+                glitchDisplacement = (0..20).random().toFloat()
+            } else {
+                glitchEnabled = false
+            }
         }
         renderPreview()
     }

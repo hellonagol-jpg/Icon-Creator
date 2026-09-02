@@ -9,9 +9,11 @@ import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.Typeface
 import android.text.TextPaint
 import com.iconcreator.model.IconSettings
+import java.util.Random
 
 /**
  * Handles all image rendering operations for the icon creator.
@@ -43,36 +45,36 @@ class IconRenderer {
         isPreview: Boolean = false
     ): Bitmap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
         val renderSize = if (isPreview) PREVIEW_SIZE else RENDER_SIZE
-        val baseBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888)
-        kotlinx.coroutines.yield()
-        val scaledBase = Bitmap.createScaledBitmap(baseBitmap, renderSize, renderSize, true)
-        val canvas = Canvas(scaledBase)
         
-        // Draw background
+        // Final resulting bitmap
+        val result = Bitmap.createBitmap(renderSize, renderSize, Bitmap.Config.ARGB_8888)
+        val resultCanvas = Canvas(result)
+        
+        // 1. Draw background directly to final canvas (Exempt from glitch)
         backgroundImage?.let { bg ->
             kotlinx.coroutines.yield()
-            // First scale background to fill renderSize
             val baseScale = renderSize.toFloat() / bg.width.coerceAtLeast(bg.height)
             val fillBg = scaleBitmap(bg, baseScale * settings.bgScale)
-            
             val hueShiftedBg = applyHueShift(fillBg, settings.bgHue)
             val brightnessAdjustedBg = applyBrightness(hueShiftedBg, settings.bgBrightness)
             
             val pasteX = (renderSize - brightnessAdjustedBg.width) / 2 + settings.bgOffsetX * (renderSize / 256)
             val pasteY = (renderSize - brightnessAdjustedBg.height) / 2 + settings.bgOffsetY * (renderSize / 256)
-            canvas.drawBitmap(brightnessAdjustedBg, pasteX.toFloat(), pasteY.toFloat(), null)
+            resultCanvas.drawBitmap(brightnessAdjustedBg, pasteX.toFloat(), pasteY.toFloat(), null)
         }
         
-        // Draw game image
+        // 2. Create a separate layer for content that CAN be glitched
+        val contentBitmap = Bitmap.createBitmap(renderSize, renderSize, Bitmap.Config.ARGB_8888)
+        val contentCanvas = Canvas(contentBitmap)
+        
+        // Draw game image to content layer
         gameImage?.let { game ->
             kotlinx.coroutines.yield()
-            // Base scale to fit the image inside renderSize
             val baseScale = renderSize.toFloat() / Math.max(game.width, game.height)
-            // Zoom multiplier (centered at 50 for 1x fit)
             val zoomFactor = if (settings.zoomLevel >= 50) {
-                1f + (settings.zoomLevel - 50) / 50f // 50->1x, 100->2x, 200->4x
+                1f + (settings.zoomLevel - 50) / 50f
             } else {
-                (settings.zoomLevel + 100) / 150f // 50->1x, 0->0.66x, -100->0x
+                (settings.zoomLevel + 100) / 150f
             }
             val scale = baseScale * zoomFactor
             
@@ -85,45 +87,51 @@ class IconRenderer {
             
             val pasteX = (renderSize - brightnessAdjustedGame.width) / 2 + settings.offsetX * (renderSize / 256)
             val pasteY = (renderSize - brightnessAdjustedGame.height) / 2 + settings.offsetY * (renderSize / 256)
-            canvas.drawBitmap(brightnessAdjustedGame, pasteX.toFloat(), pasteY.toFloat(), gamePaint)
+            contentCanvas.drawBitmap(brightnessAdjustedGame, pasteX.toFloat(), pasteY.toFloat(), gamePaint)
         }
         
         kotlinx.coroutines.yield()
-        // Draw CRT scanlines
+        // Draw CRT scanlines to content layer
         if (settings.crtEnabled && scanlineOverlay != null) {
-            drawScanlines(canvas, scanlineOverlay, settings.scanlineAlpha, renderSize)
+            drawScanlines(contentCanvas, scanlineOverlay, settings.scanlineAlpha, renderSize)
         }
         
-        // Draw text
-        drawText(canvas, settings, font, renderSize)
+        // Draw text to content layer
+        drawText(contentCanvas, settings, font, renderSize)
         
         kotlinx.coroutines.yield()
-        // Draw decoration
+        // Draw decoration to content layer
         if (settings.decorEnabled && decorImage != null) {
             val margin = 44f * (renderSize / 512f)
             val scaledDecor = scaleBitmap(decorImage, settings.decorScale * (renderSize / 256f))
             val decorX = renderSize - scaledDecor.width - margin + settings.decorOffsetX * (renderSize / 256f)
             val decorY = renderSize - scaledDecor.height - margin + settings.decorOffsetY * (renderSize / 256f)
-            canvas.drawBitmap(scaledDecor, decorX, decorY, null)
+            contentCanvas.drawBitmap(scaledDecor, decorX, decorY, null)
         }
         
-        // Draw Border Shadow (over background/game as per user instruction)
+        // 3. Apply Glitch Effects to the content layer only
+        var finalContent = contentBitmap
+        if (settings.glitchEnabled) {
+            finalContent = applyGlitchEffects(contentBitmap, settings)
+        }
+        
+        // 4. Draw glitched content on top of background
+        resultCanvas.drawBitmap(finalContent, 0f, 0f, null)
+        
+        // 5. Draw Border Shadow and Frame (Exempt from glitch)
         borderShadow?.let { shadow ->
             kotlinx.coroutines.yield()
-            val shadowOpacity = settings.shadowOpacity
             val shadowPaint = Paint().apply {
-                alpha = (shadowOpacity * 2.55f).toInt().coerceIn(0, 255)
+                alpha = (settings.shadowOpacity * 2.55f).toInt().coerceIn(0, 255)
             }
             val scaledShadow = Bitmap.createScaledBitmap(shadow, renderSize, renderSize, true)
-            canvas.drawBitmap(scaledShadow, 0f, 0f, shadowPaint)
+            resultCanvas.drawBitmap(scaledShadow, 0f, 0f, shadowPaint)
         }
 
-        // Draw frame (Border) on top of shadow
         frameImage?.let { frame ->
             kotlinx.coroutines.yield()
             var tintedFrame = applyHueShift(frame, settings.borderHue)
             
-            // Recreate Python's frame.putalpha(alpha2) using luminance
             alpha2Mask?.let { mask ->
                 val maskBitmap = applyLuminanceToAlpha(mask, tintedFrame.width, tintedFrame.height)
                 val maskedFrame = Bitmap.createBitmap(tintedFrame.width, tintedFrame.height, Bitmap.Config.ARGB_8888)
@@ -144,16 +152,11 @@ class IconRenderer {
             val scaledFrame = Bitmap.createScaledBitmap(tintedFrame, renderSize, renderSize, true)
             val frameX = (renderSize - scaledFrame.width) / 2 + settings.frameOffsetX * (renderSize / 512)
             val frameY = (renderSize - scaledFrame.height) / 2 + settings.frameOffsetY * (renderSize / 512)
-            canvas.drawBitmap(scaledFrame, frameX.toFloat(), frameY.toFloat(), framePaint)
+            resultCanvas.drawBitmap(scaledFrame, frameX.toFloat(), frameY.toFloat(), framePaint)
         }
         
         kotlinx.coroutines.yield()
-        // Create final output with alpha mask
-        val result = Bitmap.createBitmap(renderSize, renderSize, Bitmap.Config.ARGB_8888)
-        val resultCanvas = Canvas(result)
-        resultCanvas.drawBitmap(scaledBase, 0f, 0f, null)
-        
-        // Apply alpha mask to the final icon (Python: inner.putalpha(self.alpha_mask_img))
+        // 6. Apply final alpha mask
         alphaMask?.let { mask ->
             val maskBitmap = applyLuminanceToAlpha(mask, renderSize, renderSize)
             val maskPaint = Paint().apply {
@@ -391,5 +394,103 @@ class IconRenderer {
                 Color.rgb(gray, gray, gray)
             }
         }
+    }
+
+    /**
+     * Applies glitch effects to the bitmap
+     */
+    private fun applyGlitchEffects(bitmap: Bitmap, settings: IconSettings): Bitmap {
+        var glitched = bitmap
+        val random = Random()
+        
+        // 1. Horizontal Displacement
+        if (settings.glitchDisplacement > 0f) {
+            val result = Bitmap.createBitmap(glitched.width, glitched.height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(result)
+            val numStrips = 20
+            val stripHeight = glitched.height / numStrips
+            
+            for (i in 0 until numStrips) {
+                val shift = (random.nextFloat() * 2f - 1f) * settings.glitchDisplacement
+                val srcRect = Rect(0, i * stripHeight, glitched.width, (i + 1) * stripHeight)
+                val dstRect = RectF(shift, (i * stripHeight).toFloat(), glitched.width.toFloat() + shift, ((i + 1) * stripHeight).toFloat())
+                canvas.drawBitmap(glitched, srcRect, dstRect, null)
+            }
+            glitched = result
+        }
+        
+        // 2. Chromatic Aberration
+        if (settings.chromaticAberration > 0f) {
+            val result = Bitmap.createBitmap(glitched.width, glitched.height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(result)
+            val shift = settings.chromaticAberration
+            
+            // Red Channel (shifted left)
+            val redPaint = Paint().apply {
+                colorFilter = ColorMatrixColorFilter(floatArrayOf(
+                    1f, 0f, 0f, 0f, 0f,
+                    0f, 0f, 0f, 0f, 0f,
+                    0f, 0f, 0f, 0f, 0f,
+                    0f, 0f, 0f, 1f, 0f
+                ))
+            }
+            canvas.drawBitmap(glitched, -shift, 0f, redPaint)
+            
+            // Green Channel (unshifted)
+            val greenPaint = Paint().apply {
+                xfermode = PorterDuffXfermode(PorterDuff.Mode.ADD)
+                colorFilter = ColorMatrixColorFilter(floatArrayOf(
+                    0f, 0f, 0f, 0f, 0f,
+                    0f, 1f, 0f, 0f, 0f,
+                    0f, 0f, 0f, 0f, 0f,
+                    0f, 0f, 0f, 1f, 0f
+                ))
+            }
+            canvas.drawBitmap(glitched, 0f, 0f, greenPaint)
+            
+            // Blue Channel (shifted right)
+            val bluePaint = Paint().apply {
+                xfermode = PorterDuffXfermode(PorterDuff.Mode.ADD)
+                colorFilter = ColorMatrixColorFilter(floatArrayOf(
+                    0f, 0f, 0f, 0f, 0f,
+                    0f, 0f, 0f, 0f, 0f,
+                    0f, 0f, 1f, 0f, 0f,
+                    0f, 0f, 0f, 1f, 0f
+                ))
+            }
+            canvas.drawBitmap(glitched, shift, 0f, bluePaint)
+            
+            glitched = result
+        }
+        
+        // 3. Digital Noise
+        if (settings.noiseOpacity > 0) {
+            val result = Bitmap.createBitmap(glitched.width, glitched.height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(result)
+            canvas.drawBitmap(glitched, 0f, 0f, null)
+            
+            val noisePaint = Paint().apply {
+                alpha = (settings.noiseOpacity * 2.55f).toInt()
+            }
+            
+            // Create a small noise bitmap and tile it
+            val noiseSize = 128
+            val noiseBitmap = Bitmap.createBitmap(noiseSize, noiseSize, Bitmap.Config.ARGB_8888)
+            for (x in 0 until noiseSize) {
+                for (y in 0 until noiseSize) {
+                    val color = if (random.nextBoolean()) Color.WHITE else Color.BLACK
+                    noiseBitmap.setPixel(x, y, color)
+                }
+            }
+            
+            for (x in 0 until glitched.width step noiseSize) {
+                for (y in 0 until glitched.height step noiseSize) {
+                    canvas.drawBitmap(noiseBitmap, x.toFloat(), y.toFloat(), noisePaint)
+                }
+            }
+            glitched = result
+        }
+        
+        return glitched
     }
 }

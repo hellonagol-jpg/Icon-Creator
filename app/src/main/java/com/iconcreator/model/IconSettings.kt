@@ -62,7 +62,13 @@ data class IconSettings(
     var decorOffsetY: Int = 0,
     
     // Shadow settings
-    var shadowOpacity: Int = 100
+    var shadowOpacity: Int = 100,
+    
+    // Glitch settings
+    var glitchEnabled: Boolean = false,
+    var chromaticAberration: Float = 5f, // 0 to 20
+    var noiseOpacity: Int = 0, // 0 to 100
+    var glitchDisplacement: Float = 0f // 0 to 50
 ) {
     
     companion object {
@@ -114,7 +120,11 @@ data class IconSettings(
             decorScale = decorScale,
             decorOffsetX = decorOffsetX,
             decorOffsetY = decorOffsetY,
-            shadowOpacity = shadowOpacity
+            shadowOpacity = shadowOpacity,
+            glitchEnabled = glitchEnabled,
+            chromaticAberration = chromaticAberration,
+            noiseOpacity = noiseOpacity,
+            glitchDisplacement = glitchDisplacement
         )
     }
 }

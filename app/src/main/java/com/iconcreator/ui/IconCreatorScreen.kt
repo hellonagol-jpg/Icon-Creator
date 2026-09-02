@@ -597,11 +597,13 @@ fun RightPanel(
             }
         }
         
-        // CRT Effects
+        // Effects
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            SectionHeader("CRT Effects", Color(0xFF16A085), expandedSections.contains("CRT Effects")) { toggleSection("CRT Effects") }
-            if (expandedSections.contains("CRT Effects")) {
+            SectionHeader("Effects", Color(0xFF16A085), expandedSections.contains("Effects")) { toggleSection("Effects") }
+            if (expandedSections.contains("Effects")) {
                 CRTSection(viewModel, settings)
+                Spacer(modifier = Modifier.height(8.dp))
+                GlitchSection(viewModel, settings)
             }
         }
         
@@ -1179,6 +1181,52 @@ fun CRTSection(viewModel: IconViewModel, settings: IconSettings) {
                 value = settings.scanlineAlpha.toFloat(),
                 valueRange = 0f..100f,
                 onValueChange = { viewModel.updateSetting { scanlineAlpha = it.toInt() } },
+                navL = navL, navR = navR,
+                step = 1f
+            )
+        }
+    }
+}
+
+@Composable
+fun GlitchSection(viewModel: IconViewModel, settings: IconSettings) {
+    val navL by viewModel.navL.collectAsState()
+    val navR by viewModel.navR.collectAsState()
+    
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        CheckboxWithLabel(
+            label = "Enable Glitch",
+            checked = settings.glitchEnabled,
+            onCheckedChange = { viewModel.updateSetting { glitchEnabled = it } }
+        )
+        
+        if (settings.glitchEnabled) {
+            SliderWithLabel(
+                label = "Chromatic Aberration",
+                value = settings.chromaticAberration,
+                valueRange = 0f..20f,
+                onValueChange = { viewModel.updateSetting { chromaticAberration = it } },
+                navL = navL, navR = navR,
+                step = 0.5f
+            )
+            
+            SliderWithLabel(
+                label = "Static Noise",
+                value = settings.noiseOpacity.toFloat(),
+                valueRange = 0f..100f,
+                onValueChange = { viewModel.updateSetting { noiseOpacity = it.toInt() } },
+                navL = navL, navR = navR,
+                step = 1f
+            )
+            
+            SliderWithLabel(
+                label = "Displacement",
+                value = settings.glitchDisplacement,
+                valueRange = 0f..50f,
+                onValueChange = { viewModel.updateSetting { glitchDisplacement = it } },
                 navL = navL, navR = navR,
                 step = 1f
             )
