@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features | IconCreator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #0a0a0a; color: #ffffff; }
+        .glitch { position: relative; text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.05em 0 rgba(0, 255, 0, 0.75), 0.025em 0.05em 0 rgba(0, 0, 255, 0.75); animation: glitch 500ms infinite; }
+        @keyframes glitch {
+            0% { text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.05em -0.025em 0 rgba(0, 255, 0, 0.75), -0.025em 0.05em 0 rgba(0, 0, 255, 0.75); }
+            15% { text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75), 0.025em 0.025em 0 rgba(0, 255, 0, 0.75), -0.05em -0.05em 0 rgba(0, 0, 255, 0.75); }
+            50% { text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75), 0.05em 0 0 rgba(0, 255, 0, 0.75), 0 -0.05em 0 rgba(0, 0, 255, 0.75); }
+            100% { text-shadow: -0.025em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.025em 0 rgba(0, 255, 0, 0.75), -0.025em -0.05em 0 rgba(0, 0, 255, 0.75); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto border-b border-white/10">
+        <a href="index.html" class="text-2xl font-bold tracking-tighter glitch">ICONCREATOR</a>
+        <div class="space-x-8 text-sm uppercase tracking-widest font-medium text-gray-400">
+            <a href="features.html" class="text-white transition">Features</a>
+            <a href="customization.html" class="hover:text-white transition">Customization</a>
+            <a href="gallery.html" class="hover:text-white transition">Template Hub</a>
+            <a href="assets/iconcreator.apk" download class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition">Get APK</a>
+        </div>
+    </nav>
+
+    <section class="py-24 bg-[#0d0d0d] min-h-screen">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-5xl font-bold mb-16">Powerful Design Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+                <div class="p-8 bg-white/5 rounded-2xl border border-white/10">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-400">Custom Image Uploads</h3>
+                    <p class="text-gray-400 text-lg leading-relaxed">Upload your own photos or game art to be the center of your icon. Adjust zoom, offsets, and stretch to fit perfectly into the 512x512 canvas.</p>
+                </div>
+                <div class="p-8 bg-white/5 rounded-2xl border border-white/10">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-purple-400">Backgrounds & Borders</h3>
+                    <p class="text-gray-400 text-lg leading-relaxed">Browse through high-quality backgrounds and frames. Customize hues, brightness, and transparency for each layer to match your style.</p>
+                </div>
+                <div class="p-8 bg-white/5 rounded-2xl border border-white/10">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-pink-400">Dynamic Text Engine</h3>
+                    <p class="text-gray-400 text-lg leading-relaxed">Add up to 3 lines of text with custom fonts. Enable rainbow shaders, outlines, or glow effects to make your titles stand out.</p>
+                </div>
+                <div class="p-8 bg-white/5 rounded-2xl border border-white/10">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-400">Advanced Effects</h3>
+                    <p class="text-gray-400 text-lg leading-relaxed">Apply retro CRT scanlines or go full glitch with Chromatic Aberration, Static Noise, and Horizontal Displacement.</p>
+                </div>
+                <div class="p-8 bg-white/5 rounded-2xl border border-white/10">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-400">Decorations Layer</h3>
+                    <p class="text-gray-400 text-lg leading-relaxed">Add final touches with decorations. Scale and position overlays anywhere on your icon with precise manual controls.</p>
+                </div>
+                <div class="p-8 bg-white/5 rounded-2xl border border-white/10">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-400">Template Sharing</h3>
+                    <p class="text-gray-400 text-lg leading-relaxed">Save your favorite setups as templates. Export designs as <code>.icontemplate</code> bundles to backup or share your creations with the community.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-12 border-t border-white/10 text-center">
+        <p class="text-gray-500 text-sm">&copy; 2026 IconCreator. All rights reserved.</p>
+    </footer>
+</body>
+</html>
