@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Hub | IconCreator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #0a0a0a; color: #ffffff; }
+        .glitch { position: relative; text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.05em 0 rgba(0, 255, 0, 0.75), 0.025em 0.05em 0 rgba(0, 0, 255, 0.75); animation: glitch 500ms infinite; }
+        @keyframes glitch {
+            0% { text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.05em -0.025em 0 rgba(0, 255, 0, 0.75), -0.025em 0.05em 0 rgba(0, 0, 255, 0.75); }
+            15% { text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75), 0.025em 0.025em 0 rgba(0, 255, 0, 0.75), -0.05em -0.05em 0 rgba(0, 0, 255, 0.75); }
+            50% { text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75), 0.05em 0 0 rgba(0, 255, 0, 0.75), 0 -0.05em 0 rgba(0, 0, 255, 0.75); }
+            100% { text-shadow: -0.025em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.025em 0 rgba(0, 255, 0, 0.75), -0.025em -0.05em 0 rgba(0, 0, 255, 0.75); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto border-b border-white/10">
+        <a href="index.html" class="text-2xl font-bold tracking-tighter glitch">ICONCREATOR</a>
+        <div class="space-x-8 text-sm uppercase tracking-widest font-medium text-gray-400">
+            <a href="features.html" class="hover:text-white transition">Features</a>
+            <a href="customization.html" class="hover:text-white transition">Customization</a>
+            <a href="gallery.html" class="text-white transition">Template Hub</a>
+            <a href="#" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition">Get APK</a>
+        </div>
+    </nav>
+
+    <section class="py-24 max-w-7xl mx-auto px-6 min-h-screen">
+        <div class="flex justify-between items-end mb-16">
+            <div>
+                <h2 class="text-5xl font-bold mb-4">Template Hub</h2>
+                <p class="text-xl text-gray-400">Share, browse, and download professional <code>.icontemplate</code> bundles.</p>
+            </div>
+            <div class="hidden md:block">
+                <button class="px-6 py-3 border border-purple-500/50 text-purple-400 font-bold rounded-lg hover:bg-purple-500/10 transition uppercase tracking-widest text-sm">Submit Design</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <!-- Featured Template -->
+            <div class="group bg-white/5 rounded-2xl overflow-hidden border border-white/10 hover:border-purple-500/30 transition shadow-lg">
+                <div class="aspect-square bg-black flex items-center justify-center relative overflow-hidden">
+                    <img src="assets/iconcreator.png" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-500" alt="IconCreator Template Preview">
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center backdrop-blur-sm">
+                        <a href="assets/iconcreator.icontemplate" download class="px-6 py-3 bg-purple-600 text-white font-bold text-sm rounded-lg uppercase hover:bg-purple-700 transition transform scale-90 group-hover:scale-100">Download Bundle</a>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="text-lg font-bold">IconCreator Official</h4>
+                        <span class="text-xs px-2 py-1 bg-purple-500/20 text-purple-400 rounded border border-purple-500/30">FEATURED</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4 italic">The original high-contrast design with custom effects.</p>
+                    <div class="flex items-center gap-2 text-xs text-gray-600 uppercase tracking-tighter">
+                        <span>Official Theme</span>
+                        <span>•</span>
+                        <span>267KB</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coming Soon Placeholder -->
+             <div class="border-2 border-dashed border-white/5 rounded-2xl flex items-center justify-center text-gray-700 flex-col gap-4 p-12 hover:bg-white/5 transition cursor-pointer group">
+                <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-purple-500/10 transition">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                </div>
+                <span class="text-sm font-bold uppercase text-center tracking-widest leading-loose">Feature Your <br/>.icontemplate here</span>
+             </div>
+        </div>
+    </section>
+
+    <footer class="py-12 border-t border-white/10 text-center">
+        <p class="text-gray-500 text-sm">&copy; 2026 IconCreator. All rights reserved.</p>
+    </footer>
+</body>
+</html>
