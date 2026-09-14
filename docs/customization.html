@@ -3,79 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customization | IconCreator</title>
+    <title>Customization Guide | IconCreator</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
-        body { font-family: 'Space Grotesk', sans-serif; background-color: #0a0a0a; color: #ffffff; }
-        .glitch { position: relative; text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.05em 0 rgba(0, 255, 0, 0.75), 0.025em 0.05em 0 rgba(0, 0, 255, 0.75); animation: glitch 500ms infinite; }
-        @keyframes glitch {
-            0% { text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.05em -0.025em 0 rgba(0, 255, 0, 0.75), -0.025em 0.05em 0 rgba(0, 0, 255, 0.75); }
-            15% { text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75), 0.025em 0.025em 0 rgba(0, 255, 0, 0.75), -0.05em -0.05em 0 rgba(0, 0, 255, 0.75); }
-            50% { text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75), 0.05em 0 0 rgba(0, 255, 0, 0.75), 0 -0.05em 0 rgba(0, 0, 255, 0.75); }
-            100% { text-shadow: -0.025em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.025em 0 rgba(0, 255, 0, 0.75), -0.025em -0.05em 0 rgba(0, 0, 255, 0.75); }
-        }
-        code { background: #2d2d2d; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; color: #ff79c6; }
+        code { background: rgba(255, 255, 255, 0.1); padding: 0.2rem 0.5rem; border-radius: 6px; font-family: monospace; color: #f472b6; }
     </style>
 </head>
-<body>
-    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto border-b border-white/10">
-        <a href="index.html" class="text-2xl font-bold tracking-tighter glitch">ICONCREATOR</a>
-        <div class="space-x-8 text-sm uppercase tracking-widest font-medium text-gray-400">
-            <a href="features.html" class="hover:text-white transition">Features</a>
-            <a href="customization.html" class="text-white transition">Customization</a>
-            <a href="gallery.html" class="hover:text-white transition">Template Hub</a>
-            <a href="assets/iconcreator.apk" download class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition">Get APK</a>
+<body class="bg-[#08080c] text-slate-100 font-sans antialiased selection:bg-purple-500 selection:text-white">
+
+    <!-- Navigation Header -->
+    <nav class="navbar border-b border-white/10">
+        <div class="nav-container">
+            <a href="index.html" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center font-bold text-lg text-white shadow-lg shadow-purple-500/30 group-hover:scale-105 transition">
+                    IC
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-bold tracking-tight glitch-text" data-text="ICONCREATOR">ICONCREATOR</span>
+                    <span class="text-[10px] text-purple-400 font-mono tracking-widest uppercase">Customization</span>
+                </div>
+            </a>
+
+            <!-- Desktop Links -->
+            <ul class="nav-links">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="app.html" class="nav-link text-purple-400 hover:text-purple-300 font-semibold">App Showcase</a></li>
+                <li><a href="features.html" class="nav-link">Features</a></li>
+                <li><a href="customization.html" class="nav-link active">Customization</a></li>
+                <li><a href="gallery.html" class="nav-link">Template Hub</a></li>
+                <li>
+                    <a href="assets/iconcreator.apk" download class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-500 hover:to-indigo-500 transition shadow-lg shadow-purple-600/30 text-xs tracking-wider uppercase">
+                        Get APK
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Mobile Hamburger Button -->
+            <button id="mobile-menu-toggle" class="mobile-menu-btn" aria-label="Toggle navigation menu">
+                &#9776;
+            </button>
         </div>
     </nav>
 
-    <section class="py-24 bg-[#0a0a0a] min-h-screen">
-        <div class="max-w-4xl mx-auto px-6">
-            <h2 class="text-5xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Unlimited Customization</h2>
-            <p class="text-xl text-gray-400 mb-16 leading-relaxed">IconCreator is built to be a platform for your creativity. You aren't limited to the assets we provide—you can easily expand the program's library with your own design elements.</p>
+    <!-- Mobile Drawer Menu -->
+    <div id="mobile-nav" class="mobile-nav">
+        <a href="index.html" class="nav-link mobile-nav-link">Home</a>
+        <a href="app.html" class="nav-link mobile-nav-link text-purple-400 font-bold">App Showcase</a>
+        <a href="features.html" class="nav-link mobile-nav-link">Features</a>
+        <a href="customization.html" class="nav-link mobile-nav-link active">Customization</a>
+        <a href="gallery.html" class="nav-link mobile-nav-link">Template Hub</a>
+        <a href="assets/iconcreator.apk" download class="mt-4 px-8 py-4 bg-purple-600 text-white font-bold rounded-xl shadow-xl uppercase tracking-widest text-sm">
+            Download APK
+        </a>
+    </div>
 
-            <div class="space-y-12">
-                <div class="flex items-start gap-6 group p-6 bg-white/5 rounded-2xl border border-white/5 hover:border-purple-500/30 transition">
-                    <div class="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-purple-400 group-hover:bg-purple-500/40 transition">1</div>
-                    <div>
-                        <h4 class="text-2xl font-bold mb-2">Custom Typography</h4>
-                        <p class="text-gray-400 leading-relaxed text-lg">Drop your favorite <code>.ttf</code> or <code>.otf</code> font files into the <code>app/src/main/assets/Fonts/</code> directory. The app will automatically detect and list them in the text settings.</p>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-6 group p-6 bg-white/5 rounded-2xl border border-white/5 hover:border-blue-500/30 transition">
-                    <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-blue-400 group-hover:bg-blue-500/40 transition">2</div>
-                    <div>
-                        <h4 class="text-2xl font-bold mb-2">Unique Backgrounds</h4>
-                        <p class="text-gray-400 leading-relaxed text-lg">Add your own textures, patterns, or artwork as <code>.png</code> files to <code>app/src/main/assets/Backgrounds/</code>. Perfect for branding or specific themes.</p>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-6 group p-6 bg-white/5 rounded-2xl border border-white/5 hover:border-green-500/30 transition">
-                    <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-green-400 group-hover:bg-green-500/40 transition">3</div>
-                    <div>
-                        <h4 class="text-2xl font-bold mb-2">Custom Framing</h4>
-                        <p class="text-gray-500 leading-relaxed text-lg">Create your own transparent <code>.png</code> frames and place them in <code>app/src/main/assets/Borders/</code>. These will appear in the Border selection menu.</p>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-6 group p-6 bg-white/5 rounded-2xl border border-white/5 hover:border-yellow-500/30 transition">
-                    <div class="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-yellow-400 group-hover:bg-yellow-500/40 transition">4</div>
-                    <div>
-                        <h4 class="text-2xl font-bold mb-2">Personal Decorations</h4>
-                        <p class="text-gray-400 leading-relaxed text-lg">Drop logos, badges, or stickers into <code>app/src/main/assets/Decor/</code>. Use the in-app controls to position them as your signature layer.</p>
-                    </div>
-                </div>
+    <!-- Main Content -->
+    <section class="pt-36 pb-24 px-6 min-h-screen">
+        <div class="max-w-4xl mx-auto space-y-12">
+            <div class="space-y-4">
+                <span class="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-mono uppercase tracking-widest rounded-full">Developer Modding</span>
+                <h1 class="text-5xl font-extrabold tracking-tight">Unlimited Asset Customization</h1>
+                <p class="text-slate-400 text-lg leading-relaxed">IconCreator is built to be an open platform for your creativity. You aren't limited to built-in assets—you can easily expand the application with your own custom fonts, backgrounds, frames, and stickers.</p>
             </div>
 
-            <div class="mt-20 p-8 bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-3xl border border-white/10">
-                <h4 class="text-xl font-bold mb-4 italic text-center text-gray-300">"Build your library, rebuild the app, and design without limits."</h4>
+            <div class="space-y-8 text-left">
+                <div class="flex items-start gap-6 p-6 bg-glass rounded-2xl border border-white/10 hover:border-purple-500/40 transition">
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-purple-400">1</div>
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold">Custom Typography (.TTF / .OTF)</h3>
+                        <p class="text-slate-300 leading-relaxed text-base">Drop your favorite <code>.ttf</code> or <code>.otf</code> font files into the Android project directory <code>app/src/main/assets/Fonts/</code>. The app automatically scans and lists them in the font dropdown.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-6 p-6 bg-glass rounded-2xl border border-white/10 hover:border-blue-500/40 transition">
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-blue-400">2</div>
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold">Unique Background Textures</h3>
+                        <p class="text-slate-300 leading-relaxed text-base">Add custom textures, bricks, or artwork as <code>.png</code> files into <code>app/src/main/assets/Backgrounds/</code>. Perfect for custom theme branding.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-6 p-6 bg-glass rounded-2xl border border-white/10 hover:border-emerald-500/40 transition">
+                    <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-emerald-400">3</div>
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold">Custom Frame Borders</h3>
+                        <p class="text-slate-300 leading-relaxed text-base">Create your own transparent PNG frames and place them in <code>app/src/main/assets/Borders/</code>. These will automatically populate in the Border frame picker.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-6 p-6 bg-glass rounded-2xl border border-white/10 hover:border-pink-500/40 transition">
+                    <div class="w-12 h-12 bg-pink-500/20 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-pink-400">4</div>
+                    <div class="space-y-2">
+                        <h3 class="text-2xl font-bold">Personal Overlay Stickers</h3>
+                        <p class="text-slate-300 leading-relaxed text-base">Drop logos, badges, or stickers into <code>app/src/main/assets/Decor/</code>. Use the in-app position controls to overlay your signature badge.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <footer class="py-12 border-t border-white/10 text-center">
-        <p class="text-gray-500 text-sm">&copy; 2026 IconCreator. All rights reserved.</p>
+    <!-- Footer -->
+    <footer class="py-12 border-t border-white/10 text-center text-slate-500 text-sm">
+        <p>&copy; 2026 IconCreator. All rights reserved.</p>
     </footer>
+
+    <script src="js/main.js"></script>
 </body>
 </html>

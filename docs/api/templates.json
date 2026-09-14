@@ -1,0 +1,14 @@
+[
+  {
+    "id": "official_01",
+    "title": "IconCreator Official",
+    "author": "Official Team",
+    "description": "High-contrast neon theme with custom glitch shaders.",
+    "previewUrl": "assets/iconcreator.png",
+    "bundleUrl": "assets/iconcreator.icontemplate",
+    "bundleFilename": "iconcreator.icontemplate",
+    "size": "267 KB",
+    "isFeatured": true,
+    "createdAt": "2026-09-01"
+  }
+]
