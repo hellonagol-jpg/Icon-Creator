@@ -1,7 +1,3 @@
-/**
- * IconCreator Template Hub - Server API File Upload & Community Management
- */
-
 document.addEventListener('DOMContentLoaded', () => {
     initTemplateHub();
 });

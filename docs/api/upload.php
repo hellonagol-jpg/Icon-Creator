@@ -1,9 +1,4 @@
 <?php
-/**
- * IconCreator Website PHP Upload API
- * Accepts FormData multipart uploads of .icontemplate files and preview images to the website server.
- */
-
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');

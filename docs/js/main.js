@@ -1,7 +1,3 @@
-/**
- * IconCreator Developer Portfolio & App Showcase JavaScript
- */
-
 document.addEventListener('DOMContentLoaded', () => {
     initNavbar();
     initMobileMenu();

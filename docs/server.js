@@ -1,8 +1,3 @@
-/**
- * IconCreator Website Backend Server (Node.js / Express)
- * Handles template file uploads, static asset serving, and community template API.
- */
-
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
